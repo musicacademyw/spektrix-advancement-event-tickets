@@ -58,6 +58,20 @@ class SpektrixService {
     }
 
     /**
+     * Get area-specific status for detailed availability checking
+     */
+    async getInstanceAreaStatus(instanceId, areaId) {
+        try {
+            const response = await fetch(`${SPEKTRIX_BASE_URL}/instances/${instanceId}/status/areas/${areaId}?includeLockInformation=true`);
+            if (!response.ok) throw new Error(`Failed to get area status for instance ${instanceId}, area ${areaId}`);
+            return await response.json();
+        } catch (error) {
+            console.error(`Error getting area status for instance ${instanceId}, area ${areaId}:`, error);
+            throw error;
+        }
+    }
+
+    /**
      * Get price list (ticket types) for an instance
      */
     async getInstancePriceList(instanceId) {
@@ -200,27 +214,49 @@ class SpektrixService {
     }
 
     /**
-     * Clear entire basket
+     * Get comprehensive availability data for an instance including individual area status
      */
-    async clearBasket() {
+    async getInstanceAvailabilityData(instanceId) {
         try {
-            const response = await fetch(`${SPEKTRIX_BASE_URL}/basket/clear`, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                credentials: 'include',
-                body: JSON.stringify({})
+            // First get the overall status, price list, and plan
+            const [status, priceList, plan] = await Promise.all([
+                this.getInstanceStatus(instanceId),
+                this.getInstancePriceList(instanceId),
+                this.getInstancePlan(instanceId)
+            ]);
+
+            // Then get individual area status for each area in the plan
+            const areaStatusPromises = plan.areas?.map(area =>
+                this.getInstanceAreaStatus(instanceId, area.id)
+                    .then(areaStatus => ({ areaId: area.id, status: areaStatus }))
+                    .catch(error => {
+                        console.warn(`Failed to get status for area ${area.id}:`, error);
+                        return { areaId: area.id, status: null };
+                    })
+            ) || [];
+
+            const areaStatuses = await Promise.all(areaStatusPromises);
+
+            // Create a map of area statuses for easy lookup
+            const areaStatusMap = {};
+            areaStatuses.forEach(({ areaId, status: areaStatus }) => {
+                if (areaStatus) {
+                    areaStatusMap[areaId] = areaStatus;
+                }
             });
 
-            if (!response.ok) throw new Error('Failed to clear basket');
-
-            return true;
+            return {
+                status,
+                priceList,
+                plan,
+                areaStatuses: areaStatusMap
+            };
         } catch (error) {
-            console.error('Error clearing basket:', error);
+            console.error(`Error getting comprehensive availability data for instance ${instanceId}:`, error);
             throw error;
         }
     }
+
 }
 
 export const spektrixService = new SpektrixService();

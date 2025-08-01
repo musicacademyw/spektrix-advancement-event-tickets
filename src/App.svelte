@@ -106,33 +106,39 @@
     }
 
     async function loadAvailability() {
-        const availabilityData = {};
-
-        for (const eventId of SPEKTRIX_EVENT_IDS) {
+        const availabilityPromises = SPEKTRIX_EVENT_IDS.map(async (eventId) => {
             try {
                 // Get instances for this event (no date filtering since each event has a single instance)
                 const instances = await spektrixService.getEventInstances(eventId);
 
                 if (instances.length > 0) {
-                    // Get status, price list, and plan for the first instance
+                    // Get comprehensive availability data including individual area status
                     const instance = instances[0];
-                    const [status, priceList, plan] = await Promise.all([
-                        spektrixService.getInstanceStatus(instance.id),
-                        spektrixService.getInstancePriceList(instance.id),
-                        spektrixService.getInstancePlan(instance.id)
-                    ]);
+                    const availabilityInfo = await spektrixService.getInstanceAvailabilityData(instance.id);
 
-                    availabilityData[eventId] = {
-                        instance,
-                        status,
-                        priceList,
-                        plan
+                    return {
+                        eventId,
+                        data: {
+                            instance,
+                            ...availabilityInfo
+                        }
                     };
                 }
+                return { eventId, data: null };
             } catch (err) {
                 console.error(`Error loading data for event ${eventId}:`, err);
+                return { eventId, data: null };
             }
-        }
+        });
+
+        const results = await Promise.all(availabilityPromises);
+
+        const availabilityData = {};
+        results.forEach(({ eventId, data }) => {
+            if (data) {
+                availabilityData[eventId] = data;
+            }
+        });
 
         availability = availabilityData;
     }
@@ -208,7 +214,8 @@
                     ticketTypeId: ticket.ticketTypeId,
                     areaId: ticket.areaId,
                     ticketIndex: i,
-                    ticketInfo: `${ticket.priceBandName} - ${ticket.areaName}`,
+                    ticketInfo: ticket.areaName,
+                    price: ticket.price,
                     firstName: existing?.firstName || '',
                     lastName: existing?.lastName || '',
                     mealChoice: existing?.mealChoice || '',
@@ -357,12 +364,8 @@
         alert('This would redirect to the Spektrix checkout process. Implementation depends on your specific Spektrix setup.');
     }
 
-    function copyAttendeeName(fromIndex, toIndex) {
-        if (attendees[fromIndex] && attendees[toIndex]) {
-            attendees[toIndex].firstName = attendees[fromIndex].firstName;
-            attendees[toIndex].lastName = attendees[fromIndex].lastName;
-            attendees = [...attendees]; // Trigger reactivity
-        }
+    function handleAddEventToBasket(event) {
+        // This handler is now a no-op, as adding to basket is handled within EventCard
     }
 </script>
 
@@ -387,93 +390,25 @@
     {:else}
         <div class="grid gap-6 lg:grid-cols-3">
             <!-- Left Column: Events (2/3 width) -->
-            <div class="lg:col-span-2 gap-6">
-                <div class="flex items-center justify-between">
-                    <!-- Quick summary of selections -->
-                    {#if selectedTickets.length > 0}
-                        <span class="badge preset-filled-secondary-500">
-                            {selectedTickets.reduce((sum, t) => sum + t.quantity, 0)} tickets selected
-                        </span>
-                    {/if}
-                </div>
-
-                <!-- Event cards with visual separation -->
-                <div class="space-y-6">
-                    {#each events as event, eventIndex}
-                        <EventCard
-                                {event}
-                                availability={availability[event.id]}
-                                {selectedTickets}
-                                onticketselection={handleTicketSelection}
-                        />
-                    {/each}
-                </div>
+            <div class="lg:col-span-2 space-y-6">
+                <!-- Event cards with integrated attendee forms -->
+                {#each events as event}
+                    <EventCard
+                            {event}
+                            availability={availability[event.id]}
+                            {selectedTickets}
+                            {attendees}
+                            {loading}
+                            onticketselection={handleTicketSelection}
+                            onattendeeupdate={handleAttendeeUpdate}
+                            onattendeeremove={handleAttendeeRemove}
+                            onaddtobasket={handleAddEventToBasket}
+                    />
+                {/each}
             </div>
 
-            <!-- Right Column: Attendees & Basket (1/3 width) -->
+            <!-- Right Column: Basket Summary (1/3 width) -->
             <div class="space-y-4">
-                <!-- Attendee Information Section -->
-                {#if showAttendeeSection}
-                    <div class="space-y-3 animate-in slide-in-from-right-2 duration-300">
-                        <div class="flex items-center justify-between">
-                            <h3 class="text-lg font-semibold">Attendee Info</h3>
-                            <button
-                                    class="btn preset-filled-primary-500"
-                                    onclick={addTicketsToBasket}
-                                    disabled={!validateAllAttendees() || loading}
-                            >
-                                {#if loading}
-                                    <div class="animate-spin rounded-full h-4 w-4 border-2 border-white border-t-transparent"></div>
-                                    <span>Adding...</span>
-                                {:else}
-                                    <ShoppingCart size={16}/>
-                                    <span>Add to Basket</span>
-                                {/if}
-                            </button>
-                        </div>
-
-                        <!-- Group attendees by event -->
-                        {#each events as event}
-                            {@const eventAttendees = attendees.filter(a => a.eventId === event.id)}
-                            {#if eventAttendees.length > 0}
-                                <div class="space-y-2">
-                                    <div class="flex items-center gap-2">
-                                        <span class="badge preset-tonal-primary text-xs">{event.name}</span>
-                                        <span class="text-xs text-surface-500">{eventAttendees.length}
-                                            attendee{eventAttendees.length !== 1 ? 's' : ''}</span>
-                                    </div>
-
-                                    <div class="space-y-2">
-                                        {#each eventAttendees as attendee, index}
-                                            <div class="animate-in slide-in-from-right-2 duration-300"
-                                                 style="animation-delay: {index * 50}ms">
-                                                <AttendeeForm
-                                                        {attendee}
-                                                        eventName={attendee.eventName}
-                                                        ticketInfo={attendee.ticketInfo}
-                                                        index={attendees.indexOf(attendee)}
-                                                        canRemove={attendees.length > 1}
-                                                        onupdate={handleAttendeeUpdate}
-                                                        onremove={handleAttendeeRemove}
-                                                        availableAttendees={attendees}
-                                                        eventId={event.id}
-                                                />
-                                            </div>
-                                        {/each}
-                                    </div>
-                                </div>
-                            {/if}
-                        {/each}
-
-                        {#if !validateAllAttendees()}
-                            <div class="alert variant-filled-warning text-sm">
-                                <span>Please complete all required fields for all attendees.</span>
-                            </div>
-                        {/if}
-                    </div>
-                {/if}
-
-                <!-- Basket Summary Section -->
                 <BasketSummary
                         {basketItems}
                         {attendees}

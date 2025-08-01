@@ -1,7 +1,7 @@
 <!-- Basket Summary Component - displays basket contents using Custom Baskets API -->
 <script>
     import {spektrixService} from '../services/spektrix.js';
-    import {AlertCircle, ShoppingCart, Trash2, User, Utensils} from 'lucide-svelte';
+    import {AlertCircle, ShoppingCart, Trash2, User, Utensils, FishOff} from 'lucide-svelte';
 
     const {
         basketItems = {},
@@ -47,7 +47,7 @@
     });
 
     function formatPrice(price) {
-        return (Number(price) || 0).toFixed(2);
+        return (Number(price) || 0).toFixed(0);
     }
 
     async function removeTickets(ticketIds) {
@@ -179,24 +179,21 @@
                                 <div class="bg-white dark:bg-surface-900 border border-surface-200 dark:border-surface-600 rounded-md p-3">
                                     {#if ticket.attribute_RegistrantName}
                                         <div class="space-y-2 text-sm">
-                                            <span class="badge preset-tonal-primary">
+                                            <span class="badge preset-tonal-primary leading-[1.2]">
                                                 <User class="w-4 h-4"/>
-                                                <span class="font-medium">
-                                                    {ticket.attribute_RegistrantName}
-                                                </span>
+                                                {ticket.attribute_RegistrantName}
                                             </span>
                                             {#if ticket.attribute_RegistrantMealChoice}
-                                                <div class="flex items-center gap-2">
-                                                    <Utensils class="w-4 h-4 text-secondary-500"/>
-                                                    <span class="text-surface-600 dark:text-surface-400">
-                                                        {ticket.attribute_RegistrantMealChoice}
-                                                    </span>
-                                                </div>
+                                                <span class="badge preset-tonal-secondary leading-[1.2]">
+                                                    <Utensils class="w-4 h-4"/>
+                                                    {ticket.attribute_RegistrantMealChoice}
+                                                </span>
                                             {/if}
                                             {#if ticket.attribute_RegistrantDietaryRestrictions}
-                                                <div class="text-xs text-surface-500 ml-6">
-                                                    <strong>Dietary:</strong> {ticket.attribute_RegistrantDietaryRestrictions}
-                                                </div>
+                                                <span class="badge preset-tonal-error text-wrap leading-[1.2]">
+                                                    <FishOff class="w-4 h-4 min-w-4"/>
+                                                    <p><strong>Dietary Restrictions:</strong> {ticket.attribute_RegistrantDietaryRestrictions}</p>
+                                                </span>
                                             {/if}
                                         </div>
                                     {:else}
