@@ -1,0 +1,226 @@
+/**
+ * Spektrix API Service
+ * Following the official Spektrix integration documentation
+ */
+
+// Use local proxy path for development, full URL for production
+const SPEKTRIX_BASE_URL = import.meta.env.DEV ? '/api/v3' : 'https://spektrix.musicacademy.org/musicacademywest/api/v3';
+
+class SpektrixService {
+    constructor() {
+        // No need to store basket references - handled via cookies/sessions
+    }
+
+    /**
+     * Get event details - public endpoint, no auth needed
+     */
+    async getEventDetails(eventId) {
+        try {
+            const response = await fetch(`${SPEKTRIX_BASE_URL}/events/${eventId}`);
+            if (!response.ok) throw new Error(`Failed to get event details for ${eventId}`);
+            return await response.json();
+        } catch (error) {
+            console.error(`Error getting event details for ${eventId}:`, error);
+            throw error;
+        }
+    }
+
+    /**
+     * Get instances for an event
+     */
+    async getEventInstances(eventId, startDate = null) {
+        try {
+            let url = `${SPEKTRIX_BASE_URL}/events/${eventId}/instances`;
+            if (startDate) {
+                url += `?start_from=${startDate}`;
+            }
+            const response = await fetch(url);
+            if (!response.ok) throw new Error(`Failed to get instances for event ${eventId}`);
+            return await response.json();
+        } catch (error) {
+            console.error(`Error getting instances for event ${eventId}:`, error);
+            throw error;
+        }
+    }
+
+    /**
+     * Get instance status/availability - includes availability for all areas
+     */
+    async getInstanceStatus(instanceId) {
+        try {
+            const response = await fetch(`${SPEKTRIX_BASE_URL}/instances/${instanceId}/status?includeChildPlans=true&includeLockInformation=true`);
+            if (!response.ok) throw new Error(`Failed to get status for instance ${instanceId}`);
+            return await response.json();
+        } catch (error) {
+            console.error(`Error getting status for instance ${instanceId}:`, error);
+            throw error;
+        }
+    }
+
+    /**
+     * Get price list (ticket types) for an instance
+     */
+    async getInstancePriceList(instanceId) {
+        try {
+            const response = await fetch(`${SPEKTRIX_BASE_URL}/instances/${instanceId}/price-list`);
+            if (!response.ok) throw new Error(`Failed to get price list for instance ${instanceId}`);
+            return await response.json();
+        } catch (error) {
+            console.error(`Error getting price list for instance ${instanceId}:`, error);
+            throw error;
+        }
+    }
+
+    /**
+     * Get seating plan details for an instance
+     */
+    async getInstancePlan(instanceId) {
+        try {
+            const response = await fetch(`${SPEKTRIX_BASE_URL}/instances/${instanceId}/plan`);
+            if (!response.ok) throw new Error(`Failed to get plan for instance ${instanceId}`);
+            return await response.json();
+        } catch (error) {
+            console.error(`Error getting plan for instance ${instanceId}:`, error);
+            throw error;
+        }
+    }
+
+    /**
+     * Add tickets to basket - client-side call with credentials
+     * Using the correct format from the documentation:
+     * [{ "instance": "instanceId", "seatingPlan": "planId", "type": "ticketTypeId" }]
+     */
+    async addTicketsToBasket(tickets) {
+        try {
+            // Transform tickets to the correct format expected by Spektrix API
+            const formattedTickets = tickets.map(ticket => ({
+                instance: ticket.instanceId,
+                seatingPlan: ticket.planId,
+                type: ticket.ticketTypeId
+            }));
+
+            const response = await fetch(`${SPEKTRIX_BASE_URL}/basket/tickets`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                credentials: 'include', // Essential for session management
+                body: JSON.stringify(formattedTickets)
+            });
+
+            if (!response.ok) {
+                const errorData = await response.json();
+                throw new Error(errorData.message || 'Failed to add tickets to basket');
+            }
+
+            return await response.json();
+        } catch (error) {
+            console.error('Error adding tickets to basket:', error);
+            throw error;
+        }
+    }
+
+    /**
+     * Update ticket attributes using PATCH
+     * Format from documentation: [{ "attribute_Name": "value" }]
+     */
+    async updateTicketAttributes(ticketId, attributes) {
+        try {
+            // Transform attributes to the correct format expected by Spektrix API
+            const formattedAttributes = [attributes];
+            const url = `${SPEKTRIX_BASE_URL}/basket/tickets/${ticketId}`;
+            const response = await fetch(url, {
+                method: 'PATCH',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                credentials: 'include',
+                body: JSON.stringify(formattedAttributes)
+            });
+
+            if (!response.ok) {
+                const errorData = await response.json();
+                throw new Error(errorData.message || 'Failed to update ticket attributes');
+            }
+
+            return await response.json();
+        } catch (error) {
+            throw error;
+        }
+    }
+
+    /**
+     * Get current basket contents using the Custom Baskets API
+     */
+    async getBasketContents() {
+        try {
+            const response = await fetch(`${SPEKTRIX_BASE_URL}/basket`, {
+                credentials: 'include' // Essential for custom baskets
+            });
+
+            if (response.status === 404) {
+                // No basket exists
+                return {
+                    items: [],
+                    tickets: [],
+                };
+            }
+
+            if (!response.ok) {
+                throw new Error('Failed to get basket contents');
+            }
+
+            return await response.json();
+        } catch (error) {
+            return {
+                items: [],
+                tickets: [],
+            };
+        }
+    }
+
+    /**
+     * Remove tickets from basket by ticket IDs
+     */
+    async removeTickets(ticketIds) {
+        try {
+            const idsParam = Array.isArray(ticketIds) ? ticketIds.join(',') : ticketIds;
+            const response = await fetch(`${SPEKTRIX_BASE_URL}/basket/tickets?ticketIds=${idsParam}`, {
+                method: 'DELETE',
+                credentials: 'include'
+            });
+
+            if (!response.ok) throw new Error('Failed to remove tickets from basket');
+
+            return true;
+        } catch (error) {
+            console.error('Error removing tickets from basket:', error);
+            throw error;
+        }
+    }
+
+    /**
+     * Clear entire basket
+     */
+    async clearBasket() {
+        try {
+            const response = await fetch(`${SPEKTRIX_BASE_URL}/basket/clear`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                credentials: 'include',
+                body: JSON.stringify({})
+            });
+
+            if (!response.ok) throw new Error('Failed to clear basket');
+
+            return true;
+        } catch (error) {
+            console.error('Error clearing basket:', error);
+            throw error;
+        }
+    }
+}
+
+export const spektrixService = new SpektrixService();

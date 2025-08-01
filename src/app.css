@@ -1,0 +1,9 @@
+@import 'https://cdn.statically.io/gh/musicacademyw/fonts/main/gilroy.css';
+@import "tailwindcss";
+@import '@skeletonlabs/skeleton/optional/presets';
+@import '@skeletonlabs/skeleton';
+@import './assets/music-academy-theme.css';
+
+@plugin "@tailwindcss/forms";
+
+@source '../node_modules/@skeletonlabs/skeleton-svelte/dist';
