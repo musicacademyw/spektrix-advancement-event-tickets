@@ -88,7 +88,7 @@
             eventId: event.id,
             eventName: event.name,
             instanceId: instance.id,
-            ticketTypeId: ticketType.id, // This is the ticket type ID
+            ticketTypeId: ticketType.id,
             ticketTypeName: ticketType.name,
             planId: area ? area.id : plan?.id,
             areaId: area?.id,
@@ -97,7 +97,7 @@
             priceBandName: getPriceBandName(ticketType.priceBandId),
             price: ticketType.price,
             quantity: quantity,
-            maxQuantity: Math.min(ticketType.available || 10, area?.available || 10, 8)
+            maxQuantity: Math.min(ticketType.available || 10, area?.available || 10, 10)
         };
 
         onticketselection(ticketSelection);
@@ -135,13 +135,12 @@
 
     // Add event-specific basket function
     function addEventToBasket(eventId) {
-        const eventTickets = selectedTickets.filter(t => t.eventId === eventId);
-        const eventAttendees = attendees.filter(a => a.eventId === eventId);
-        onaddtobasket(eventId, eventTickets, eventAttendees);
+        // Call the main add to basket function directly
+        onaddtobasket();
     }
 </script>
 
-<div class="card variant-glass-surface border-2 border-surface-200 dark:border-surface-700 p-4 space-y-3 relative overflow-hidden">
+<div class="card border-2 border-surface-200-800 p-5 space-y-3">
     <!-- Event header with badge -->
     <header class="space-y-2">
         <div class="flex items-start justify-between">
@@ -151,13 +150,13 @@
                     {#if !availability}
                         <span class="badge placeholder w-35 h-8 animate-pulse"></span>
                     {:else if !isOnSale && instance}
-                        <span class="badge preset-outlined-warning-100-900 text-warning-950 font-bold"><TicketX
+                        <span class="badge preset-outlined-warning-100-900 text-warning-950-50 font-bold"><TicketX
                                 class="h-4 w-4"/>Coming Soon</span>
                     {:else if isOnSale && hasAvailability}
-                        <span class="badge preset-outlined-success-100-900 text-success-900 font-bold"><TicketCheck
+                        <span class="badge preset-outlined-success-100-900 text-success-900-100 font-bold"><TicketCheck
                                 class="h-4 w-4"/>On Sale</span>
                     {:else if isOnSale && status && !hasAvailability}
-                        <span class="badge preset-outlined-error-100-900 text-error-900 font-bold"><TicketX
+                        <span class="badge preset-outlined-error-100-900 text-error-900-100 font-bold"><TicketX
                                 class="h-4 w-4"/>Sold Out</span>
                     {/if}
                     {#if instance}
@@ -234,7 +233,7 @@
                     {@const areaAvailable = getAreaAvailability(area)}
                     {@const areaIsSoldOut = isAreaSoldOut(area)}
 
-                    <div class="card px-4 py-3 border border-dashed border-surface-200 dark:border-surface-700">
+                    <div class="card px-4 py-3 border border-dashed border-surface-200-800">
                         <div class="space-y-2">
                             {#each priceList.prices as price}
                                 {@const maxQty = Math.min(areaAvailable, 8)}
@@ -316,7 +315,7 @@
                     <h4 class="h5">Enter Attendee Information</h4>
                 </div>
 
-                <div class="space-y-3 ml-11">
+                <div class="space-y-3">
                     {#each eventAttendees as attendee, index}
                         <div class="animate-in slide-in-from-top-2 duration-300"
                              style="animation-delay: {index * 50}ms">
@@ -393,7 +392,3 @@
         </div>
     {/if}
 </div>
-
-
-
-

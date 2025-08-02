@@ -124,17 +124,26 @@
                         }
                     };
                 }
-                return { eventId, data: null };
+                return {
+                    eventId,
+                    data: null
+                };
             } catch (err) {
                 console.error(`Error loading data for event ${eventId}:`, err);
-                return { eventId, data: null };
+                return {
+                    eventId,
+                    data: null
+                };
             }
         });
 
         const results = await Promise.all(availabilityPromises);
 
         const availabilityData = {};
-        results.forEach(({ eventId, data }) => {
+        results.forEach(({
+                             eventId,
+                             data
+                         }) => {
             if (data) {
                 availabilityData[eventId] = data;
             }
@@ -243,26 +252,32 @@
         if (attendees[index]) {
             const attendee = attendees[index];
 
-            // Remove this attendee and reduce the ticket quantity
+            // Find the corresponding ticket selection
             const ticketSelection = selectedTickets.find(t =>
                 t.eventId === attendee.eventId &&
                 t.ticketTypeId === attendee.ticketTypeId &&
                 t.areaId === attendee.areaId
             );
 
-            if (ticketSelection && ticketSelection.quantity > 1) {
-                ticketSelection.quantity--;
-                selectedTickets = [...selectedTickets];
-            } else {
-                // Remove the entire ticket selection
-                selectedTickets = selectedTickets.filter(t =>
-                    !(t.eventId === attendee.eventId &&
-                        t.ticketTypeId === attendee.ticketTypeId &&
-                        t.areaId === attendee.areaId)
-                );
+            if (ticketSelection) {
+                if (ticketSelection.quantity > 1) {
+                    // Reduce quantity by 1
+                    ticketSelection.quantity--;
+                    selectedTickets = [...selectedTickets]; // Trigger reactivity
+                } else {
+                    // Remove the entire ticket selection if quantity becomes 0
+                    selectedTickets = selectedTickets.filter(t =>
+                        !(t.eventId === attendee.eventId &&
+                            t.ticketTypeId === attendee.ticketTypeId &&
+                            t.areaId === attendee.areaId)
+                    );
+                }
             }
 
-            updateAttendeesList();
+            // Remove the specific attendee from the attendees array
+            attendees = attendees.filter((_, i) => i !== index);
+
+            // Update UI state
             updateShowAttendeeSection();
         }
     }
@@ -365,7 +380,8 @@
     }
 
     function handleAddEventToBasket(event) {
-        // This handler is now a no-op, as adding to basket is handled within EventCard
+        // Call the main addTicketsToBasket function that handles the Spektrix API interactions
+        addTicketsToBasket();
     }
 </script>
 
