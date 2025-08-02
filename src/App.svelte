@@ -4,6 +4,8 @@
     import EventCard from './components/EventCard.svelte';
     import BasketSummary from './components/BasketSummary.svelte';
     import {RefreshCw} from 'lucide-svelte';
+    import {Toaster} from '@skeletonlabs/skeleton-svelte';
+    import {toaster} from './toaster.js';
 
     const SPEKTRIX_EVENT_IDS = [
         '101001ASRCJQGCSBLJCPNPQQRRGSLJCLH',
@@ -21,7 +23,6 @@
     let basketLoading = $state(true); // Add separate loading state for basket
     let loading = $state(true);
     let error = $state(null);
-    let showAttendeeSection = $state(false);
     let isTabVisible = $state(true);
 
     // Auto-refresh availability every 30 seconds
@@ -218,7 +219,7 @@
         if (updatedSelections.length !== selectedTickets.length ||
             updatedSelections.some((sel, i) => sel.quantity !== selectedTickets[i]?.quantity)) {
             selectedTickets = updatedSelections;
-            updateShowAttendeeSection();
+            updateAttendeesList();
         }
 
         // Show notifications for unavailable tickets
@@ -230,10 +231,17 @@
     function showAvailabilityNotifications(unavailableSelections) {
         unavailableSelections.forEach(selection => {
             if (selection.reason === 'sold_out') {
-                // Show a more user-friendly notification
-                alert(`Sorry! ${selection.areaName} tickets for ${selection.eventName} are no longer available. They may have been purchased by another customer.`);
+                // Show error toast for sold out tickets
+                toaster.error({
+                    title: 'Tickets No Longer Available',
+                    description: `${selection.areaName} tickets for ${selection.eventName} are no longer available. They may have been purchased by another customer.`
+                });
             } else if (selection.reason === 'quantity_reduced') {
-                alert(`Availability update: Only ${selection.newQuantity} ${selection.areaName} tickets are now available for ${selection.eventName} (you had selected ${selection.originalQuantity}). Your selection has been automatically adjusted.`);
+                // Show warning toast for quantity reductions
+                toaster.warning({
+                    title: 'Availability Updated',
+                    description: `Only ${selection.newQuantity} ${selection.areaName} tickets are now available for ${selection.eventName} (you had selected ${selection.originalQuantity}). Your selection has been automatically adjusted.`
+                });
             }
         });
     }
@@ -267,14 +275,6 @@
                 selection];
         }
 
-        updateShowAttendeeSection();
-    }
-
-    function updateShowAttendeeSection() {
-        const totalTickets = selectedTickets.reduce((sum, t) => sum + t.quantity, 0);
-        showAttendeeSection = totalTickets > 0;
-
-        // Update attendees list based on selected tickets
         updateAttendeesList();
     }
 
@@ -353,7 +353,10 @@
 
     async function addTicketsToBasket() {
         if (!validateAllAttendees()) {
-            alert('Please fill in all required attendee information (name and meal choice) before adding to basket.');
+            toaster.warning({
+                title: 'Incomplete Information',
+                description: 'Please fill in all required attendee information (name and meal choice) before adding to basket.'
+            });
             return;
         }
 
@@ -418,7 +421,6 @@
             // Clear selections and reload basket AFTER attributes are updated
             selectedTickets = [];
             attendees = [];
-            showAttendeeSection = false;
             await loadBasket();
 
         } catch (err) {
@@ -464,9 +466,9 @@
             </div>
         </div>
     {:else if error}
-        <div class="alert variant-filled-error">
+        <div class="card py-3 px-4 preset-filled-warning-100-900 border border-warning-300-700">
             <span>Error: {error}</span>
-            <button class="btn preset-filled-secondary-500" onclick={loadInitialData}>
+            <button class="btn preset-filled-warning-500" onclick={loadInitialData}>
                 <RefreshCw size={16}/>
                 <span>Retry</span>
             </button>
@@ -503,4 +505,7 @@
             </div>
         </div>
     {/if}
+
+    <!-- Toaster component for notifications -->
+    <Toaster {toaster}/>
 </div>

@@ -85,14 +85,14 @@
 </script>
 
 {#if basketLoading}
-    <div class="card variant-glass-surface border-2 border-surface-200 dark:border-surface-700 p-6">
+    <div class="card border-2 border-surface-200 dark:border-surface-700 p-6">
         <div class="flex items-center justify-center space-x-3 py-8">
             <div class="animate-spin rounded-full h-6 w-6 border-2 border-primary-500 border-t-transparent"></div>
             <span class="text-surface-600 dark:text-surface-400">Loading basket...</span>
         </div>
     </div>
 {:else if filteredTickets.length > 0}
-    <div class="card variant-glass-surface border-2 border-surface-200 dark:border-surface-700 overflow-hidden">
+    <div class="card border-2 border-surface-200 dark:border-surface-700 overflow-hidden">
         <!-- Header with gradient background -->
         <header class="bg-gradient-to-r from-primary-50 to-secondary-50 dark:from-primary-900/20 dark:to-secondary-900/20 px-6 py-4 border-b border-surface-200 dark:border-surface-700">
             <div class="flex items-center justify-between">
@@ -121,7 +121,7 @@
         <!-- Tickets content -->
         <div class="p-6 space-y-6">
             {#if error}
-                <div class="alert variant-filled-error">
+                <div class="card py-3 px-4 preset-filled-error-100-900 border border-error-300-700">
                     <AlertCircle class="w-4 h-4"/>
                     <span>{error}</span>
                 </div>
@@ -161,7 +161,7 @@
                                         </div>
                                     </div>
                                     <button
-                                            class="btn-icon btn-icon-sm variant-filled-error hover:scale-105 transition-transform"
+                                            class="btn-icon preset-filled-error-200-800"
                                             onclick={() => removeTickets([ticket.id])}
                                             disabled={loading}
                                             type="button"
@@ -223,7 +223,7 @@
                 </div>
             </div>
             <button
-                    class="btn variant-filled-primary w-full"
+                    class="btn preset-filled-primary-300-700 w-full"
                     onclick={() => onproceedtocheckout()}
                     type="button"
             >
@@ -234,7 +234,7 @@
     </div>
 {:else if basketItems.tickets && basketItems.tickets.length > 0}
     <!-- Debug state when tickets exist but none match filter -->
-    <div class="card variant-glass-surface border-2 border-warning-200 dark:border-warning-700 p-6">
+    <div class="card border-2 border-warning-200 dark:border-warning-700 p-6">
         <div class="text-center space-y-4">
             <div class="p-3 bg-warning-100 dark:bg-warning-900/20 rounded-lg inline-block">
                 <AlertCircle class="w-6 h-6 text-warning-600"/>
@@ -256,7 +256,7 @@
     </div>
 {:else}
     <!-- Empty basket state -->
-    <div class="card variant-glass-surface border-2 border-surface-200 dark:border-surface-700 p-8">
+    <div class="card border-2 border-surface-200 dark:border-surface-700 p-8">
         <div class="text-center space-y-4">
             <div class="p-4 bg-surface-100 dark:bg-surface-800 rounded-full inline-block">
                 <ShoppingCart class="w-8 h-8 text-surface-400"/>

@@ -199,18 +199,18 @@
             <div class="placeholder h-16 w-full"></div>
         </div>
     {:else if error}
-        <div class="alert variant-filled-error">
+        <div class="card py-3 px-4 preset-filled-error-100-900 border border-error-300-700">
             <span>Error: {error}</span>
         </div>
     {:else if !isOnSale}
-        <div class="card p-3 preset-filled-warning-100-900 border border-warning-300 dark:border-warning-700">
+        <div class="card py-3 px-4 preset-filled-warning-100-900 border border-warning-300-700">
             <div class="flex items-center gap-2">
                 <TriangleAlert class="w-4 h-4"/>
                 <span class="text-sm font-medium">{saleStatusMessage}</span>
             </div>
         </div>
     {:else if !hasAvailability}
-        <div class="card p-3 preset-filled-error-100-900 border border-error-300 dark:border-error-700">
+        <div class="card py-3 px-4 preset-filled-error-100-900 border border-error-300-700">
             <div class="flex items-center gap-2">
                 <TicketX class="w-4 h-4"/>
                 <span class="text-sm font-medium">This event is sold out</span>
@@ -234,7 +234,7 @@
                     <div class="card px-4 py-3 border border-dashed border-surface-200-800">
                         <div class="space-y-2">
                             {#each priceList.prices as price}
-                                {@const maxQty = Math.min(areaAvailable, 8)}
+                                {@const maxQty = Math.min(areaAvailable, 10)}
                                 {@const currentQty = getSelectedQuantity(price.ticketType.id, area.id)}
                                 {@const
                                     isCorrectArea = (area.name.includes('General Admission') && price.priceBand.name === 'Price A') || (area.name.includes('Premium Seating & Experience') && price.priceBand.name === 'Price B')}
@@ -331,60 +331,41 @@
                         </div>
                     {/each}
                 </div>
-            </div>
 
-            <!-- Step 3: Add to Basket -->
-            <div class="border-t border-surface-200 dark:border-surface-600 my-6"></div>
+                <!-- Complete checkout -->
+                <div class="space-y-2">
 
-            <div class="space-y-4">
-                <div class="flex items-center gap-3">
-                    <div class="flex items-center justify-center w-8 h-8 bg-primary-500 text-white rounded-full text-sm font-bold">
-                        3
-                    </div>
-                    <div>
-                        <h4 class="h5 font-medium">Add to Basket</h4>
-                        <p class="text-xs text-surface-600 dark:text-surface-400">Review and add your tickets</p>
-                    </div>
-                </div>
-
-                <div class="ml-11">
                     <!-- Ticket summary -->
-                    <div class="bg-surface-50 dark:bg-surface-800 border border-surface-200 dark:border-surface-600 rounded-lg p-4 space-y-2">
-                        <div class="flex items-center justify-between text-sm">
-                            <span class="font-medium">Total Tickets:</span>
-                            <span>{totalTickets}</span>
+                    {#if !eventAttendeesComplete}
+                        <div class="card rounded-2xl py-3 px-4 preset-filled-warning-100-900 border border-warning-300-700">
+                            <span>Enter all attendee information above before adding to basket.</span>
                         </div>
-                        <div class="flex items-center justify-between text-sm">
-                            <span class="font-medium">Total Price:</span>
-                            <span class="font-bold text-lg">${totalPrice.toFixed(0)}</span>
+                    {:else}
+                        <div class="card rounded-2xl py-2 px-4 preset-outlined-primary-300-700 text-center text-base">
+                            Your total for {totalTickets} ticket{totalTickets !== 1 ? 's' : ''} is
+                            <strong>${totalPrice.toFixed(0)}.</strong>
                         </div>
-
-                        {#if !eventAttendeesComplete}
-                            <div class="alert variant-filled-warning text-sm mt-3">
-                                <span>Please complete all attendee information above before adding to basket.</span>
-                            </div>
-                        {/if}
-                    </div>
+                    {/if}
 
                     <!-- Add to Basket button -->
                     <button
-                            class="btn preset-filled-primary-500 w-full mt-4 text-lg py-3"
+                            class="btn w-full {!eventAttendeesComplete || loading ? 'preset-tonal-surface cursor-not-allowed' : 'preset-filled-primary-700-300'}"
                             onclick={addEventToBasket}
                             disabled={!eventAttendeesComplete || loading}
                     >
                         {#if loading}
-                            <div class="animate-spin rounded-full h-5 w-5 border-2 border-white border-t-transparent"></div>
+                            <div class="animate-spin rounded-full h-5 w-5 border-2 border-surface border-t-transparent"></div>
                             <span>Adding...</span>
                         {:else}
                             <ShoppingCart size={20}/>
-                            <span>Add {totalTickets} Ticket{totalTickets !== 1 ? 's' : ''} to Basket</span>
+                            <span>Add Ticket{totalTickets !== 1 ? 's' : ''} to Basket</span>
                         {/if}
                     </button>
                 </div>
             </div>
         {/if}
     {:else}
-        <div class="alert variant-filled-warning text-sm">
+        <div class="card py-3 px-4 preset-filled-warning-100-900 border border-warning-300-700">
             <span>No ticket types available for this event</span>
         </div>
     {/if}
