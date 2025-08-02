@@ -1,6 +1,6 @@
 <!-- Event Card Component - displays event details and ticket selection -->
 <script>
-    import {TriangleAlert, TicketX, TicketCheck, CalendarClock, MapPin, ShoppingCart, Check} from 'lucide-svelte';
+    import {TriangleAlert, TicketX, TicketCheck, CalendarClock, MapPin, ShoppingCart} from 'lucide-svelte';
     import AttendeeForm from './AttendeeForm.svelte';
 
     const {
@@ -11,8 +11,6 @@
         onticketselection = () => {
         },
         onattendeeupdate = () => {
-        },
-        onattendeeremove = () => {
         },
         onaddtobasket = () => {
         },
@@ -134,7 +132,7 @@
     const eventHasSelectedTickets = $derived(selectedTickets.some(ticket => ticket.eventId === event.id));
 
     // Add event-specific basket function
-    function addEventToBasket(eventId) {
+    function addEventToBasket() {
         // Call the main add to basket function directly
         onaddtobasket();
     }
@@ -272,7 +270,8 @@
                                                        for="qty-{price.id}-{area.id}">Quantity:</label>
                                                 <select
                                                         id="qty-{price.id}-{area.id}"
-                                                        class="select text-sm px-3 py-1 w-16 {currentQty > 0 ? 'preset-tonal-success' : 'preset-tonal-surface'}"
+                                                        class="select text-sm px-3 py-1 w-16"
+                                                        value={currentQty}
                                                         onchange={(e) => {
                                                         const target = e.target;
                                                         if (target && 'value' in target) {
@@ -281,7 +280,7 @@
                                                     }}
                                                 >
                                                     {#each Array(maxQty + 1) as _, i}
-                                                        <option value={i} selected={i === currentQty}>{i}</option>
+                                                        <option value={i}>{i}</option>
                                                     {/each}
                                                 </select>
                                             {:else}
@@ -325,9 +324,7 @@
                                     ticketInfo={attendee.ticketInfo}
                                     price={attendee.price || selectedTickets.find(t => t.eventId === event.id)?.price}
                                     index={index}
-                                    canRemove={eventAttendees.length > 1}
                                     onupdate={onattendeeupdate}
-                                    onremove={onattendeeremove}
                                     availableAttendees={attendees}
                                     eventId={event.id}
                             />
@@ -372,7 +369,7 @@
                     <!-- Add to Basket button -->
                     <button
                             class="btn preset-filled-primary-500 w-full mt-4 text-lg py-3"
-                            onclick={() => addEventToBasket(event.id)}
+                            onclick={addEventToBasket}
                             disabled={!eventAttendeesComplete || loading}
                     >
                         {#if loading}

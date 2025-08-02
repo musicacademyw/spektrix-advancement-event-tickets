@@ -2,9 +2,8 @@
     import {onMount} from 'svelte';
     import {spektrixService} from './services/spektrix.js';
     import EventCard from './components/EventCard.svelte';
-    import AttendeeForm from './components/AttendeeForm.svelte';
     import BasketSummary from './components/BasketSummary.svelte';
-    import {RefreshCw, ShoppingCart} from 'lucide-svelte';
+    import {RefreshCw} from 'lucide-svelte';
 
     const SPEKTRIX_EVENT_IDS = [
         '101001ASRCJQGCSBLJCPNPQQRRGSLJCLH',
@@ -154,13 +153,89 @@
 
     async function refreshAvailability() {
         try {
+            const previousAvailability = {...availability};
+
             await Promise.all([
                 loadAvailability(),
                 loadBasket()
             ]);
+
+            // Only validate selected tickets if there are pending selections (not yet in basket)
+            if (selectedTickets.length > 0) {
+                validateSelectedTicketsAvailability(previousAvailability);
+            }
         } catch (err) {
             console.error('Error refreshing availability and basket:', err);
         }
+    }
+
+    function validateSelectedTicketsAvailability(previousAvailability) {
+        const unavailableSelections = [];
+        const updatedSelections = [];
+
+        selectedTickets.forEach(selection => {
+            const eventAvailability = availability[selection.eventId];
+            if (!eventAvailability) return;
+
+            // Get current availability for this area
+            const areaStatus = eventAvailability.areaStatuses?.[selection.areaId];
+            const currentAvailable = areaStatus?.available || 0;
+
+            if (currentAvailable === 0) {
+                // Area is completely sold out
+                unavailableSelections.push({
+                    ...selection,
+                    reason: 'sold_out',
+                    areaName: selection.areaName
+                });
+            } else if (currentAvailable < selection.quantity) {
+                // Not enough tickets available, reduce quantity to what's available
+                const previousAvailable = previousAvailability[selection.eventId]?.areaStatuses?.[selection.areaId]?.available || 0;
+
+                // Only show notification if availability actually decreased during this refresh
+                if (currentAvailable < previousAvailable) {
+                    unavailableSelections.push({
+                        ...selection,
+                        reason: 'quantity_reduced',
+                        originalQuantity: selection.quantity,
+                        newQuantity: currentAvailable,
+                        areaName: selection.areaName
+                    });
+                }
+
+                // Update the selection to the maximum available
+                updatedSelections.push({
+                    ...selection,
+                    quantity: currentAvailable
+                });
+            } else {
+                // Still available, keep as is
+                updatedSelections.push(selection);
+            }
+        });
+
+        // Update selected tickets if any changes needed
+        if (updatedSelections.length !== selectedTickets.length ||
+            updatedSelections.some((sel, i) => sel.quantity !== selectedTickets[i]?.quantity)) {
+            selectedTickets = updatedSelections;
+            updateShowAttendeeSection();
+        }
+
+        // Show notifications for unavailable tickets
+        if (unavailableSelections.length > 0) {
+            showAvailabilityNotifications(unavailableSelections);
+        }
+    }
+
+    function showAvailabilityNotifications(unavailableSelections) {
+        unavailableSelections.forEach(selection => {
+            if (selection.reason === 'sold_out') {
+                // Show a more user-friendly notification
+                alert(`Sorry! ${selection.areaName} tickets for ${selection.eventName} are no longer available. They may have been purchased by another customer.`);
+            } else if (selection.reason === 'quantity_reduced') {
+                alert(`Availability update: Only ${selection.newQuantity} ${selection.areaName} tickets are now available for ${selection.eventName} (you had selected ${selection.originalQuantity}). Your selection has been automatically adjusted.`);
+            }
+        });
     }
 
     async function loadBasket() {
@@ -177,7 +252,7 @@
         }
     }
 
-    function handleTicketSelection(selection) {
+    function handleTicketSelection(selection = {}) {
         // Remove existing selection for this event/ticket type/area combination
         selectedTickets = selectedTickets.filter(t =>
             !(t.eventId === selection.eventId &&
@@ -206,31 +281,59 @@
     function updateAttendeesList() {
         const newAttendees = [];
 
-        selectedTickets.forEach(ticket => {
-            for (let i = 0; i < ticket.quantity; i++) {
-                // Try to find existing attendee data
-                const existing = attendees.find(a =>
-                    a.eventId === ticket.eventId &&
-                    a.ticketTypeId === ticket.ticketTypeId &&
-                    a.areaId === ticket.areaId &&
-                    a.ticketIndex === i
-                );
+        // Get all events that have selected tickets to maintain consistent ordering
+        const eventsWithTickets = [...new Set(selectedTickets.map(t => t.eventId))];
 
-                newAttendees.push({
-                    id: `${ticket.eventId}-${ticket.ticketTypeId}-${ticket.areaId}-${i}`,
-                    eventId: ticket.eventId,
-                    eventName: ticket.eventName,
-                    ticketTypeId: ticket.ticketTypeId,
-                    areaId: ticket.areaId,
-                    ticketIndex: i,
-                    ticketInfo: ticket.areaName,
-                    price: ticket.price,
-                    firstName: existing?.firstName || '',
-                    lastName: existing?.lastName || '',
-                    mealChoice: existing?.mealChoice || '',
-                    dietaryRestrictions: existing?.dietaryRestrictions || ''
+        eventsWithTickets.forEach(eventId => {
+            // Get the event's availability data to determine area ordering
+            const eventAvailability = availability[eventId];
+            if (!eventAvailability?.plan?.areas) return;
+
+            // Sort attendees by the same order as areas appear in the UI
+            eventAvailability.plan.areas.forEach(area => {
+                // Find all selected tickets for this event and area, sorted by price band
+                const areaTickets = selectedTickets
+                    .filter(ticket =>
+                        ticket.eventId === eventId &&
+                        ticket.areaId === area.id
+                    )
+                    .sort((a, b) => {
+                        // Sort by price band (A before B)
+                        if (a.priceBandId !== b.priceBandId) {
+                            return a.priceBandId.localeCompare(b.priceBandId);
+                        }
+                        // Then by ticket type ID for consistency
+                        return a.ticketTypeId.localeCompare(b.ticketTypeId);
+                    });
+
+                // Create attendees for each ticket in the correct order
+                areaTickets.forEach(ticket => {
+                    for (let i = 0; i < ticket.quantity; i++) {
+                        // Try to find existing attendee data
+                        const existing = attendees.find(a =>
+                            a.eventId === ticket.eventId &&
+                            a.ticketTypeId === ticket.ticketTypeId &&
+                            a.areaId === ticket.areaId &&
+                            a.ticketIndex === i
+                        );
+
+                        newAttendees.push({
+                            id: `${ticket.eventId}-${ticket.ticketTypeId}-${ticket.areaId}-${i}`,
+                            eventId: ticket.eventId,
+                            eventName: ticket.eventName,
+                            ticketTypeId: ticket.ticketTypeId,
+                            areaId: ticket.areaId,
+                            ticketIndex: i,
+                            ticketInfo: ticket.areaName,
+                            price: ticket.price,
+                            firstName: existing?.firstName || '',
+                            lastName: existing?.lastName || '',
+                            mealChoice: existing?.mealChoice || '',
+                            dietaryRestrictions: existing?.dietaryRestrictions || ''
+                        });
+                    }
                 });
-            }
+            });
         });
 
         attendees = newAttendees;
@@ -245,40 +348,6 @@
         if (attendees[index]) {
             attendees[index] = {...attendees[index], ...updatedAttendee};
             attendees = [...attendees]; // Trigger reactivity
-        }
-    }
-
-    function handleAttendeeRemove(index) {
-        if (attendees[index]) {
-            const attendee = attendees[index];
-
-            // Find the corresponding ticket selection
-            const ticketSelection = selectedTickets.find(t =>
-                t.eventId === attendee.eventId &&
-                t.ticketTypeId === attendee.ticketTypeId &&
-                t.areaId === attendee.areaId
-            );
-
-            if (ticketSelection) {
-                if (ticketSelection.quantity > 1) {
-                    // Reduce quantity by 1
-                    ticketSelection.quantity--;
-                    selectedTickets = [...selectedTickets]; // Trigger reactivity
-                } else {
-                    // Remove the entire ticket selection if quantity becomes 0
-                    selectedTickets = selectedTickets.filter(t =>
-                        !(t.eventId === attendee.eventId &&
-                            t.ticketTypeId === attendee.ticketTypeId &&
-                            t.areaId === attendee.areaId)
-                    );
-                }
-            }
-
-            // Remove the specific attendee from the attendees array
-            attendees = attendees.filter((_, i) => i !== index);
-
-            // Update UI state
-            updateShowAttendeeSection();
         }
     }
 
@@ -379,8 +448,7 @@
         alert('This would redirect to the Spektrix checkout process. Implementation depends on your specific Spektrix setup.');
     }
 
-    function handleAddEventToBasket(event) {
-        // Call the main addTicketsToBasket function that handles the Spektrix API interactions
+    function handleAddEventToBasket() {
         addTicketsToBasket();
     }
 </script>
@@ -417,7 +485,6 @@
                             {loading}
                             onticketselection={handleTicketSelection}
                             onattendeeupdate={handleAttendeeUpdate}
-                            onattendeeremove={handleAttendeeRemove}
                             onaddtobasket={handleAddEventToBasket}
                     />
                 {/each}

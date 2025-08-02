@@ -1,6 +1,6 @@
 <!-- Attendee Form Component - simplified styling focused on essentials -->
 <script>
-    import {ClipboardCheck, ClipboardX, FishOff, Trash2, User, Utensils} from 'lucide-svelte';
+    import {ClipboardCheck, ClipboardX, FishOff, User, Utensils} from 'lucide-svelte';
 
     const {
         attendee = {
@@ -13,10 +13,7 @@
         ticketInfo = '',
         price = 0,
         index = 0,
-        canRemove = true,
         onupdate = () => {
-        },
-        onremove = () => {
         },
         availableAttendees = [],
         eventId = ''
@@ -62,10 +59,6 @@
     // Check if form is complete using local state
     const isComplete = $derived(firstName && lastName && mealChoice);
 
-    function handleRemove() {
-        onremove(index);
-    }
-
     function handleUpdate() {
         onupdate({
             index,
@@ -100,16 +93,6 @@
                     <ClipboardX class="w-4 h-4"/>
                     Incomplete
                 </span>
-            {/if}
-            {#if canRemove}
-                <button
-                        class="btn-icon preset-outlined-error-200-800 p-1"
-                        onclick={handleRemove}
-                        type="button"
-                        title="Remove attendee"
-                >
-                    <Trash2 size={12}/>
-                </button>
             {/if}
         </div>
     </div>
