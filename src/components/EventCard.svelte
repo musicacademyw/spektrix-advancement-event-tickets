@@ -14,7 +14,8 @@
         },
         onaddtobasket = () => {
         },
-        loading = false
+        loading = false,
+        numTicketsInBasket = 0,
     } = $props();
 
     let error = $state(null);
@@ -225,6 +226,15 @@
                 </div>
                 <h4 class="h5">Choose Tickets</h4>
             </div>
+
+            <!-- Tickets already in basket warning -->
+            {#if numTicketsInBasket > 0}
+                <div class="card rounded-2xl py-3 px-4 preset-filled-success-100-900 border border-success-300-700 flex items-center gap-2">
+                    <TicketCheck class="w-5 h-5"/>
+                    You already have {numTicketsInBasket} ticket{numTicketsInBasket === 1 ? '' : 's'} for this event in
+                    your basket.
+                </div>
+            {/if}
 
             <div class="space-y-3">
                 {#each plan.areas as area}

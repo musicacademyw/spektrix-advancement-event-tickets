@@ -20,6 +20,8 @@
         onbasketupdated = () => {
         },
         onproceedtocheckout = () => {
+        },
+        ongetmariposatickets = () => {
         }
     } = $props();
 
@@ -105,7 +107,7 @@
         </div>
     </div>
 {:else if filteredTickets.length > 0}
-    <div class="flex flex-col sticky top-3" style="height: calc(100vh - 3rem);">
+    <div class="flex flex-col sticky top-3" style="max-height: calc(100vh - 3rem);">
         <div class="card border-2 border-surface-200 dark:border-surface-700 overflow-hidden flex flex-col h-full">
             <header class="preset-filled-surface-50-950 px-5 py-3 border-b border-surface-200-800 flex-shrink-0">
                 <div class="flex items-center justify-between">
@@ -210,7 +212,7 @@
             </div>
 
             <!-- Footer with checkout button -->
-            <footer class="preset-filled-surface-50-950 px-5 py-3 border-t border-surface-200-800 flex-shrink-0">
+            <footer class="preset-filled-surface-50-950 px-5 py-3 border-t border-surface-200-800 flex-shrink-0 space-y-2">
                 <button
                         class="btn w-full preset-filled-primary-700-300"
                         onclick={() => onproceedtocheckout()}
@@ -218,6 +220,13 @@
                 >
                     <ShoppingCart class="w-4 h-4"/>
                     <span>Proceed to Checkout</span>
+                </button>
+                <button
+                        class="btn w-full preset-filled-primary-100-900"
+                        onclick={() => ongetmariposatickets()}
+                        type="button"
+                >
+                    <span>Get Mariposa Tickets</span>
                 </button>
             </footer>
         </div>

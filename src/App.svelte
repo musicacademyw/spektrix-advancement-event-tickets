@@ -450,6 +450,11 @@
         alert('This would redirect to the Spektrix checkout process. Implementation depends on your specific Spektrix setup.');
     }
 
+    function handleGetMariposaTickets() {
+        // In a real implementation, this would redirect to Mariposa ticket retrieval
+        alert('This would redirect to the Mariposa ticket retrieval process. Implementation depends on your specific Mariposa setup.');
+    }
+
     function handleAddEventToBasket() {
         addTicketsToBasket();
     }
@@ -488,6 +493,7 @@
                             onticketselection={handleTicketSelection}
                             onattendeeupdate={handleAttendeeUpdate}
                             onaddtobasket={handleAddEventToBasket}
+                            numTicketsInBasket={basketItems.tickets.filter(t => t.event?.id === event.id).length}
                     />
                 {/each}
             </div>
@@ -500,6 +506,7 @@
                         basketLoading={basketLoading}
                         onbasketupdated={handleBasketUpdated}
                         onproceedtocheckout={handleProceedToCheckout}
+                        ongetmariposatickets={handleGetMariposaTickets}
                 />
             </div>
         </div>
