@@ -168,7 +168,7 @@ class SpektrixService {
      */
     async getBasketContents() {
         try {
-            const response = await fetch(`${SPEKTRIX_BASE_URL}/basket`, {
+            const response = await fetch(`${SPEKTRIX_BASE_URL}/basket?$expand=tickets/event,tickets/instance`, {
                 credentials: 'include' // Essential for custom baskets
             });
 
@@ -222,24 +222,30 @@ class SpektrixService {
             const [status, priceList, plan] = await Promise.all([
                 this.getInstanceStatus(instanceId),
                 this.getInstancePriceList(instanceId),
-                this.getInstancePlan(instanceId)
-            ]);
+                this.getInstancePlan(instanceId)]);
 
             // Then get individual area status for each area in the plan
-            const areaStatusPromises = plan.areas?.map(area =>
-                this.getInstanceAreaStatus(instanceId, area.id)
-                    .then(areaStatus => ({ areaId: area.id, status: areaStatus }))
-                    .catch(error => {
-                        console.warn(`Failed to get status for area ${area.id}:`, error);
-                        return { areaId: area.id, status: null };
-                    })
-            ) || [];
+            const areaStatusPromises = plan.areas?.map(area => this.getInstanceAreaStatus(instanceId, area.id)
+                .then(areaStatus => ({
+                    areaId: area.id,
+                    status: areaStatus
+                }))
+                .catch(error => {
+                    console.warn(`Failed to get status for area ${area.id}:`, error);
+                    return {
+                        areaId: area.id,
+                        status: null
+                    };
+                })) || [];
 
             const areaStatuses = await Promise.all(areaStatusPromises);
 
             // Create a map of area statuses for easy lookup
             const areaStatusMap = {};
-            areaStatuses.forEach(({ areaId, status: areaStatus }) => {
+            areaStatuses.forEach(({
+                                      areaId,
+                                      status: areaStatus
+                                  }) => {
                 if (areaStatus) {
                     areaStatusMap[areaId] = areaStatus;
                 }

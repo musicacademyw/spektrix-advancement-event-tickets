@@ -1,11 +1,20 @@
 <!-- Basket Summary Component - displays basket contents using Custom Baskets API -->
 <script>
     import {spektrixService} from '../services/spektrix.js';
-    import {AlertCircle, ShoppingCart, Trash2, User, Utensils, FishOff} from 'lucide-svelte';
+    import {
+        AlertCircle,
+        ShoppingCart,
+        Trash2,
+        User,
+        Utensils,
+        FishOff,
+        CalendarClock,
+        MapPin,
+        TicketCheck, Ticket
+    } from 'lucide-svelte';
 
     const {
         basketItems = {},
-        attendees = [],
         advancementEventIds = [],
         basketLoading = false,
         onbasketupdated = () => {
@@ -68,13 +77,17 @@
         const groups = {};
         filteredTickets.forEach(ticket => {
             const eventId = ticket.event?.id;
-            const eventName = ticket.event?.name || 'Unknown Event';
+            const eventName = ticket.event?.attribute_ShortEventName || 'Unknown Event';
+            const eventDate = ticket.instance?.start || 'Unknown Date';
+            const eventVenue = ticket.instance?.attribute_WebVenue || 'Unknown Venue';
             if (!eventId) {
                 console.warn('Ticket missing event id:', ticket);
             }
             if (!groups[eventId]) {
                 groups[eventId] = {
                     eventName,
+                    eventDate,
+                    eventVenue,
                     tickets: []
                 };
             }
@@ -92,166 +105,121 @@
         </div>
     </div>
 {:else if filteredTickets.length > 0}
-    <div class="card border-2 border-surface-200 dark:border-surface-700 overflow-hidden">
-        <!-- Header with gradient background -->
-        <header class="bg-gradient-to-r from-primary-50 to-secondary-50 dark:from-primary-900/20 dark:to-secondary-900/20 px-6 py-4 border-b border-surface-200 dark:border-surface-700">
-            <div class="flex items-center justify-between">
-                <div class="flex items-center gap-3">
-                    <div class="p-2 bg-primary-500 rounded-lg">
-                        <ShoppingCart class="w-5 h-5 text-white"/>
-                    </div>
-                    <div>
-                        <h3 class="text-lg font-semibold text-surface-900 dark:text-surface-100">Your Basket</h3>
-                        <p class="text-sm text-surface-600 dark:text-surface-400">
-                            {totalTickets} ticket{totalTickets !== 1 ? 's' : ''} selected
-                        </p>
+    <div class="flex flex-col sticky top-3" style="height: calc(100vh - 3rem);">
+        <div class="card border-2 border-surface-200 dark:border-surface-700 overflow-hidden flex flex-col h-full">
+            <header class="preset-filled-surface-50-950 px-5 py-3 border-b border-surface-200-800 flex-shrink-0">
+                <div class="flex items-center justify-between">
+                    <div class="flex items-center gap-3">
+                        <div class="p-2 bg-primary-500 rounded-lg">
+                            <Ticket class="w-5 h-5 text-white"/>
+                        </div>
+                        <div>
+                            <h3 class="h4 text-lg leading-tight font-semibold">Ticket Summary</h3>
+                        </div>
                     </div>
                 </div>
-                <div class="text-right">
-                    <div class="text-2xl font-bold text-primary-600 dark:text-primary-400">
-                        ${formatPrice(totalCost)}
-                    </div>
-                    <div class="text-xs text-surface-500 uppercase tracking-wide">
-                        Total
-                    </div>
-                </div>
-            </div>
-        </header>
+            </header>
 
-        <!-- Tickets content -->
-        <div class="p-6 space-y-6">
-            {#if error}
-                <div class="card py-3 px-4 preset-filled-error-100-900 border border-error-300-700">
-                    <AlertCircle class="w-4 h-4"/>
-                    <span>{error}</span>
-                </div>
-            {/if}
-
-            <!-- Group tickets by event -->
-            {#each Object.entries(groupedTickets) as [eventId, group]}
-                <div class="space-y-3">
-                    <!-- Event header -->
-                    <div class="flex items-center gap-2 pb-2 border-b border-surface-200 dark:border-surface-600">
-                        <span class="badge preset-filled-primary-500 text-xs font-medium">
-                            {group.eventName}
-                        </span>
-                        <span class="text-xs text-surface-500">
-                            {group.tickets.length} ticket{group.tickets.length !== 1 ? 's' : ''}
-                        </span>
+            <!-- Tickets content - scrollable section -->
+            <div class="p-4 space-y-6 overflow-y-auto flex-1 min-h-0">
+                {#if error}
+                    <div class="card py-3 px-4 preset-filled-error-100-900 border border-error-300-700">
+                        <AlertCircle class="w-4 h-4"/>
+                        <span>{error}</span>
                     </div>
+                {/if}
 
-                    <!-- Event tickets -->
-                    <div class="space-y-3">
-                        {#each group.tickets as ticket}
-                            <div class="bg-surface-50 dark:bg-surface-800 border border-surface-200 dark:border-surface-600 rounded-lg p-4 transition-all duration-200 hover:shadow-md">
-                                <!-- Ticket header -->
-                                <div class="flex items-start justify-between mb-3">
-                                    <div class="flex-1">
-                                        <h5 class="font-semibold text-surface-900 dark:text-surface-100 mb-1">
-                                            {ticket.planName || 'Event Ticket'}
+                <!-- Group tickets by event -->
+                {#each Object.entries(groupedTickets) as [eventId, group]}
+                    <div class="card p-4 border border-dashed border-surface-300-700">
+                        <!-- Event header -->
+                        <div class="flex flex-col gap-1 mb-3">
+                            <h4 class="text-sm font-semibold text-center">{group.eventName}</h4>
+                            <!-- Event information -->
+                            <span class="badge preset-outlined-primary-100-900 text-primary-900-100 text-[0.9rem] leading-[1.2] gap-1">
+                                <CalendarClock class="w-2.5 h-2.5"/>
+                                <time datetime={new Date(group.eventDate).toISOString()}>
+                                {new Date(group.eventDate).toLocaleDateString('en-US', {
+                                    weekday: 'short',
+                                    month: 'short',
+                                    day: 'numeric'
+                                })} at {new Date(group.eventDate).toLocaleTimeString('en-US', {
+                                    hour: 'numeric',
+                                    minute: '2-digit'
+                                })}
+                            </time>
+                            </span>
+                            <span class="badge preset-outlined-secondary-100-900 text-secondary-900-100 text-[0.9rem] leading-[1.2] gap-1">
+                                    <MapPin class="w-2.5 h-2.5"/>{group.eventVenue}
+                                </span>
+                            <span class="badge preset-outlined-tertiary-100-900 text-tertiary-900-100 text-[0.9rem] leading-[1.2] gap-1">
+                                    <TicketCheck class="w-3 h-3"/>
+                                {group.tickets.length} ticket{group.tickets.length !== 1 ? 's' : ''}
+                                (${group.tickets.reduce((sum, ticket) => {
+                                const ticketPrice = ticket.total || ticket.price || 0;
+                                return sum + ticketPrice;
+                            }, 0)})
+                            </span>
+                        </div>
+
+                        <!-- Event tickets -->
+                        <div class="space-y-3">
+                            {#each group.tickets as ticket}
+                                <div class="card p-3.5 preset-filled-surface-50-950 border border-surface-100-900 border-dashed">
+                                    <div class="flex items-end justify-between mb-3">
+                                        <h5 class="text-base font-semibold flex-1 leading-tight">
+                                            {ticket.attribute_RegistrantName || 'Unnamed Ticket'}
                                         </h5>
-                                        <div class="flex items-center gap-4 text-sm text-surface-600 dark:text-surface-400">
-                                            <span class="font-medium">${formatPrice(ticket.price)}</span>
-                                            {#if ticket.attribute_RegistrantName}
-                                                <span class="flex items-center gap-1">
-                                                    <User class="w-3 h-3"/>
-                                                    {ticket.attribute_RegistrantName}
-                                                </span>
+                                        <button
+                                                class="btn-icon btn-icon-sm p-1 border-1 border-transparent text-error-700-300 hover:preset-outlined-error-700-300"
+                                                onclick={() => removeTickets([ticket.id])}
+                                                disabled={loading}
+                                                type="button"
+                                                title="Remove ticket"
+                                        >
+                                            {#if loading}
+                                                <div class="animate-spin rounded-full h-3 w-3 border border-surface-800-200 border-t-transparent"></div>
+                                            {:else}
+                                                <Trash2 class="w-3 h-3"/>
                                             {/if}
-                                        </div>
+                                        </button>
                                     </div>
-                                    <button
-                                            class="btn-icon preset-filled-error-200-800"
-                                            onclick={() => removeTickets([ticket.id])}
-                                            disabled={loading}
-                                            type="button"
-                                            title="Remove ticket"
-                                    >
-                                        {#if loading}
-                                            <div class="animate-spin rounded-full h-3 w-3 border border-white border-t-transparent"></div>
-                                        {:else}
-                                            <Trash2 class="w-3 h-3"/>
+                                    <!-- Ticket details -->
+                                    <div class="flex flex-col flex-wrap gap-1.5">
+                                        <span class="badge preset-tonal-success border border-success-200-800 text-wrap text-[0.9rem] leading-[1.2] gap-1 justify-start"><TicketCheck
+                                                class="w-4 h-4"/>{ticket.planName || 'Event Ticket'}
+                                            - ${formatPrice(ticket.price)}</span>
+                                        {#if ticket.attribute_RegistrantMealChoice}
+                                                    <span class="badge preset-tonal-secondary border border-secondary-200-800 text-wrap text-[0.9rem] leading-[1.2] gap-1 justify-start">
+                                                        <Utensils class="w-3 h-3"/>
+                                                        <strong>Meal Choice:</strong> {ticket.attribute_RegistrantMealChoice}
+                                                    </span>
                                         {/if}
-                                    </button>
+                                        {#if ticket.attribute_RegistrantDietaryRestrictions}
+                                                    <span class="badge preset-tonal-error border border-error-200-800 text-wrap text-[0.9rem] leading-[1.2] gap-1 justify-start">
+                                                        <FishOff class="w-4 h-4 min-w-4"/>
+                                                        <p><strong>Dietary Restrictions:</strong> {ticket.attribute_RegistrantDietaryRestrictions}</p>
+                                                    </span>
+                                        {/if}
+                                    </div>
                                 </div>
-
-                                <!-- Attendee details -->
-                                <div class="bg-white dark:bg-surface-900 border border-surface-200 dark:border-surface-600 rounded-md p-3">
-                                    {#if ticket.attribute_RegistrantName}
-                                        <div class="space-y-2 text-sm">
-                                            <span class="badge preset-tonal-primary leading-[1.2]">
-                                                <User class="w-4 h-4"/>
-                                                {ticket.attribute_RegistrantName}
-                                            </span>
-                                            {#if ticket.attribute_RegistrantMealChoice}
-                                                <span class="badge preset-tonal-secondary leading-[1.2]">
-                                                    <Utensils class="w-4 h-4"/>
-                                                    {ticket.attribute_RegistrantMealChoice}
-                                                </span>
-                                            {/if}
-                                            {#if ticket.attribute_RegistrantDietaryRestrictions}
-                                                <span class="badge preset-tonal-error text-wrap leading-[1.2]">
-                                                    <FishOff class="w-4 h-4 min-w-4"/>
-                                                    <p><strong>Dietary Restrictions:</strong> {ticket.attribute_RegistrantDietaryRestrictions}</p>
-                                                </span>
-                                            {/if}
-                                        </div>
-                                    {:else}
-                                        <div class="flex items-center gap-2 text-warning-600 dark:text-warning-400">
-                                            <AlertCircle class="w-4 h-4"/>
-                                            <span class="text-sm font-medium">Attendee information needed</span>
-                                        </div>
-                                    {/if}
-                                </div>
-                            </div>
-                        {/each}
+                            {/each}
+                        </div>
                     </div>
-                </div>
-            {/each}
-        </div>
+                {/each}
+            </div>
 
-        <!-- Footer with checkout button -->
-        <footer class="bg-surface-50 dark:bg-surface-800 px-6 py-4 border-t border-surface-200 dark:border-surface-700">
-            <div class="flex items-center justify-between mb-3">
-                <div class="text-sm text-surface-600 dark:text-surface-400">
-                    Ready to complete your purchase?
-                </div>
-                <div class="text-right">
-                    <div class="text-lg font-bold text-surface-900 dark:text-surface-100">
-                        Total: ${formatPrice(totalCost)}
-                    </div>
-                </div>
-            </div>
-            <button
-                    class="btn preset-filled-primary-300-700 w-full"
-                    onclick={() => onproceedtocheckout()}
-                    type="button"
-            >
-                <ShoppingCart class="w-4 h-4"/>
-                <span>Proceed to Checkout</span>
-            </button>
-        </footer>
-    </div>
-{:else if basketItems.tickets && basketItems.tickets.length > 0}
-    <!-- Debug state when tickets exist but none match filter -->
-    <div class="card border-2 border-warning-200 dark:border-warning-700 p-6">
-        <div class="text-center space-y-4">
-            <div class="p-3 bg-warning-100 dark:bg-warning-900/20 rounded-lg inline-block">
-                <AlertCircle class="w-6 h-6 text-warning-600"/>
-            </div>
-            <div>
-                <h3 class="h4 font-semibold text-warning-800 dark:text-warning-200 mb-2">
-                    No Matching Tickets
-                </h3>
-                <p class="text-sm text-surface-600 dark:text-surface-400 mb-4">
-                    You have tickets in your basket, but none match the advancement events.
-                </p>
-                <div class="bg-surface-100 dark:bg-surface-800 rounded-lg p-3 text-xs text-left space-y-1">
-                    <div><strong>Raw tickets:</strong> {basketItems.tickets?.length || 0}</div>
-                    <div><strong>Filtered tickets:</strong> {filteredTickets.length}</div>
-                    <div><strong>Target events:</strong> {advancementEventIds.length}</div>
-                </div>
-            </div>
+            <!-- Footer with checkout button -->
+            <footer class="preset-filled-surface-50-950 px-5 py-3 border-t border-surface-200-800 flex-shrink-0">
+                <button
+                        class="btn w-full preset-filled-primary-700-300"
+                        onclick={() => onproceedtocheckout()}
+                        type="button"
+                >
+                    <ShoppingCart class="w-4 h-4"/>
+                    <span>Proceed to Checkout</span>
+                </button>
+            </footer>
         </div>
     </div>
 {:else}

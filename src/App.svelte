@@ -496,7 +496,6 @@
             <div class="space-y-4">
                 <BasketSummary
                         {basketItems}
-                        {attendees}
                         advancementEventIds={SPEKTRIX_EVENT_IDS}
                         basketLoading={basketLoading}
                         onbasketupdated={handleBasketUpdated}

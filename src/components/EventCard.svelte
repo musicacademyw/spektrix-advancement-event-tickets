@@ -158,7 +158,7 @@
                                 class="h-4 w-4"/>Sold Out</span>
                     {/if}
                     {#if instance}
-                        <span class="badge preset-outlined-primary-100-900 text-primary-900 font-bold"><CalendarClock
+                        <span class="badge preset-outlined-primary-100-900 text-primary-900-100 font-bold"><CalendarClock
                                 class="h-4 w-4"/><time
                                 datetime={new Date(instance.start).toISOString()}>
                             {new Date(instance.start).toLocaleDateString('en-US', {
@@ -171,7 +171,7 @@
                             minute: '2-digit'
                         })}
                         </time></span>
-                        <span class="badge preset-outlined-secondary-100-900 text-secondary-950 font-bold"><MapPin
+                        <span class="badge preset-outlined-secondary-100-900 text-secondary-900-100 font-bold"><MapPin
                                 class="h-4 w-4"/>
                             {instance.attribute_WebVenue}
                         </span>
@@ -320,13 +320,10 @@
                              style="animation-delay: {index * 50}ms">
                             <AttendeeForm
                                     {attendee}
-                                    eventName={event.attribute_ShortEventName}
                                     ticketInfo={attendee.ticketInfo}
                                     price={attendee.price || selectedTickets.find(t => t.eventId === event.id)?.price}
                                     index={index}
                                     onupdate={onattendeeupdate}
-                                    availableAttendees={attendees}
-                                    eventId={event.id}
                             />
                         </div>
                     {/each}

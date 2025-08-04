@@ -9,14 +9,11 @@
             mealChoice: '',
             dietaryRestrictions: ''
         },
-        eventName = '',
         ticketInfo = '',
         price = 0,
         index = 0,
         onupdate = () => {
         },
-        availableAttendees = [],
-        eventId = ''
     } = $props();
 
     // Create local state variables for form inputs
