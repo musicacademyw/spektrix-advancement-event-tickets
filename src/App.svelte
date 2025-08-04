@@ -479,9 +479,10 @@
             </button>
         </div>
     {:else}
-        <div class="grid gap-6 lg:grid-cols-3">
-            <!-- Left Column: Events (2/3 width) -->
-            <div class="lg:col-span-2 space-y-6">
+        <!-- Grid layout: single column on mobile, 2/3 + 1/3 on lg+ -->
+        <div class="grid grid-cols-1 lg:grid-cols-3 lg:gap-6 lg:h-screen lg:overflow-hidden">
+            <!-- Left Column: Events (scrollable on lg+) -->
+            <div class="lg:col-span-2 space-y-6 lg:overflow-y-auto lg:pr-3">
                 <!-- Event cards with integrated attendee forms -->
                 {#each events as event}
                     <EventCard
@@ -493,20 +494,18 @@
                             onticketselection={handleTicketSelection}
                             onattendeeupdate={handleAttendeeUpdate}
                             onaddtobasket={handleAddEventToBasket}
-                            numTicketsInBasket={basketItems.tickets.filter(t => t.event?.id === event.id).length}
                     />
                 {/each}
             </div>
 
-            <!-- Right Column: Basket Summary (1/3 width) -->
-            <div class="space-y-4">
+            <!-- Right Column: Basket Summary (fixed height on lg+) -->
+            <div class="mt-6 lg:mt-0 lg:h-full lg:overflow-hidden">
                 <BasketSummary
                         {basketItems}
                         advancementEventIds={SPEKTRIX_EVENT_IDS}
                         basketLoading={basketLoading}
                         onbasketupdated={handleBasketUpdated}
                         onproceedtocheckout={handleProceedToCheckout}
-                        ongetmariposatickets={handleGetMariposaTickets}
                 />
             </div>
         </div>

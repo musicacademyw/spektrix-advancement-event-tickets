@@ -72,26 +72,24 @@
 
 <div class="card px-4 py-3 border border-dashed border-surface-200 dark:border-surface-700 space-y-3">
     <!-- Attendee header with status -->
-    <div class="flex items-center justify-between">
-        <div class="flex items-center gap-2">
-            <span class="text-base font-semibold">Attendee #{index + 1}</span>
+    <div class="flex flex-col lg:flex-row lg:items-center justify-between gap-2 lg:gap-1">
+        <div class="flex flex-col lg:flex-row lg:items-center gap-2">
+            <span class="text-base font-semibold text-center lg:text-left">Attendee #{index + 1}</span>
             <span class="badge preset-tonal-surface italic">{ticketInfo}
                 - ${price?.toFixed(0) || '0'}</span>
         </div>
 
-        <div class="flex items-center gap-2">
-            {#if isComplete}
+        {#if isComplete}
                 <span class="badge preset-filled-success-500">
                     <ClipboardCheck class="w-4 h-4"/>
                     Complete
                 </span>
-            {:else}
+        {:else}
                 <span class="badge preset-filled-warning-500">
                     <ClipboardX class="w-4 h-4"/>
                     Incomplete
                 </span>
-            {/if}
-        </div>
+        {/if}
     </div>
 
     <!-- Form fields -->
@@ -120,7 +118,7 @@
     </div>
 
     <div class="grid grid-cols-3 gap-2">
-        <div class="input-group grid-cols-[auto_1fr]">
+        <div class="input-group grid-cols-[auto_1fr] col-span-3 lg:col-span-1">
             <div class="ig-cell preset-tonal">
                 <Utensils class="w-4 h-4"/>
             </div>
@@ -135,7 +133,7 @@
             </select>
         </div>
 
-        <div class="input-group grid-cols-[auto_1fr] col-span-2">
+        <div class="input-group grid-cols-[auto_1fr] col-span-3 lg:col-span-2">
             <div class="ig-cell preset-tonal">
                 <FishOff class="w-4 h-4"/>
             </div>

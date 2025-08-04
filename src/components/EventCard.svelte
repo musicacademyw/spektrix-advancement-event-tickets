@@ -144,8 +144,8 @@
     <header class="space-y-2">
         <div class="flex items-start justify-between">
             <div class="flex-1">
-                <h3 class="h4 font-semibold mb-1">{event.attribute_ShortEventName}</h3>
-                <div class="flex gap-2 mb-2">
+                <h3 class="h4 font-semibold mb-1 text-center lg:text-left">{event.attribute_ShortEventName}</h3>
+                <div class="flex flex-wrap flex-col gap-2 mb-2">
                     {#if !availability}
                         <span class="badge placeholder w-35 h-8 animate-pulse"></span>
                     {:else if !isOnSale && instance}
@@ -183,7 +183,7 @@
                 </div>
 
                 {#if event.description}
-                    <p class="text-sm">{event.description}</p>
+                    <p class="text-[1rem] lg:text-sm text-center lg:text-left">{event.description}</p>
                 {/if}
             </div>
         </div>
@@ -258,9 +258,9 @@
                                 }}
 
                                 {#if isCorrectArea}
-                                    <div class="flex items-center justify-between">
+                                    <div class="flex flex-col lg:flex-row items-center justify-between">
                                         <div class="flex items-center gap-2">
-                                            <span class="text-base"><span
+                                            <span class="text-sm lg:text-base leading-tight text-center lg:text-left"><span
                                                     class="font-semibold">{area.name}</span> - ${price.amount.toFixed(0)}</span>
                                             {#if areaIsSoldOut}
                                                 <span class="badge preset-filled-error-800-200 text-xs">
@@ -321,7 +321,7 @@
                     <div class="flex items-center justify-center w-8 h-8 bg-primary-500 text-white rounded-full text-sm font-bold">
                         2
                     </div>
-                    <h4 class="h5">Enter Attendee Information</h4>
+                    <h4 class="h5">Enter Attendee Info</h4>
                 </div>
 
                 <div class="space-y-3">
