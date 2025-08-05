@@ -43,9 +43,9 @@
 
         const formatDate = (date) => {
             return date.toLocaleDateString('en-US', {
-                weekday: 'long',
+                weekday: 'short',
                 year: 'numeric',
-                month: 'long',
+                month: 'short',
                 day: 'numeric'
             }) + ' at ' + date.toLocaleTimeString('en-US', {
                 hour: 'numeric',
@@ -136,6 +136,21 @@
     function addEventToBasket() {
         // Call the main add to basket function directly
         onaddtobasket();
+
+        // Scroll to basket summary after a short delay to allow for the basket update
+        setTimeout(() => {
+            // Look for the basket summary component
+            const basketSummary = document.querySelector('.basket-summary') ||
+                document.querySelector('[data-basket-summary]');
+
+            if (basketSummary) {
+                basketSummary.scrollIntoView({
+                    behavior: 'smooth',
+                    block: 'start',
+                    inline: 'nearest'
+                });
+            }
+        }, 500); // Wait 500ms for basket update to complete
     }
 </script>
 
@@ -145,7 +160,7 @@
         <div class="flex items-start justify-between">
             <div class="flex-1">
                 <h3 class="h4 font-semibold mb-1 text-center lg:text-left">{event.attribute_ShortEventName}</h3>
-                <div class="flex flex-wrap flex-col gap-2 mb-2">
+                <div class="flex flex-wrap not-lg:flex-col gap-2 mb-2">
                     {#if !availability}
                         <span class="badge placeholder w-35 h-8 animate-pulse"></span>
                     {:else if !isOnSale && instance}
@@ -163,9 +178,9 @@
                                 class="h-4 w-4"/><time
                                 datetime={new Date(instance.start).toISOString()}>
                             {new Date(instance.start).toLocaleDateString('en-US', {
-                                weekday: 'long',
+                                weekday: 'short',
                                 year: 'numeric',
-                                month: 'long',
+                                month: 'short',
                                 day: 'numeric'
                             })} at {new Date(instance.start).toLocaleTimeString('en-US', {
                             hour: 'numeric',
@@ -183,7 +198,7 @@
                 </div>
 
                 {#if event.description}
-                    <p class="text-[1rem] lg:text-sm text-center lg:text-left">{event.description}</p>
+                    <p class="text-[0.9rem] lg:text-sm text-center lg:text-left">{event.description}</p>
                 {/if}
             </div>
         </div>
@@ -224,7 +239,7 @@
                 <div class="flex items-center justify-center w-8 h-8 bg-primary-500 text-white rounded-full text-sm font-bold">
                     1
                 </div>
-                <h4 class="h5">Choose Tickets</h4>
+                <h4 class="h5 not-lg:text-base">Choose Tickets</h4>
             </div>
 
             <!-- Tickets already in basket warning -->
@@ -321,7 +336,7 @@
                     <div class="flex items-center justify-center w-8 h-8 bg-primary-500 text-white rounded-full text-sm font-bold">
                         2
                     </div>
-                    <h4 class="h5">Enter Attendee Info</h4>
+                    <h4 class="h5 not-lg:text-base">Enter Attendee Info</h4>
                 </div>
 
                 <div class="space-y-3">

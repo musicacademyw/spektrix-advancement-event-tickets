@@ -506,6 +506,7 @@
                         basketLoading={basketLoading}
                         onbasketupdated={handleBasketUpdated}
                         onproceedtocheckout={handleProceedToCheckout}
+                        ongetmariposatickets={handleGetMariposaTickets}
                 />
             </div>
         </div>

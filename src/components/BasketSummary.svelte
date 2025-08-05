@@ -107,7 +107,7 @@
         </div>
     </div>
 {:else if filteredTickets.length > 0}
-    <div class="flex flex-col sticky top-3" style="max-height: calc(100vh - 3rem);">
+    <div class="flex flex-col sticky top-3" style="max-height: calc(100vh - 3rem);" data-basket-summary>
         <div class="card border-2 border-surface-200 dark:border-surface-700 overflow-hidden flex flex-col h-full">
             <header class="preset-filled-surface-50-950 px-5 py-3 border-b border-surface-200-800 flex-shrink-0">
                 <div class="flex items-center justify-between">
@@ -233,18 +233,16 @@
     </div>
 {:else}
     <!-- Empty basket state -->
-    <div class="card border-2 border-surface-200 dark:border-surface-700 p-8">
+    <div class="card border-2 border-surface-200 dark:border-surface-700 p-6">
         <div class="text-center space-y-4">
-            <div class="p-4 bg-surface-100 dark:bg-surface-800 rounded-full inline-block">
+            <div class="p-3 bg-surface-100 dark:bg-surface-800 rounded-full inline-block">
                 <ShoppingCart class="w-8 h-8 text-surface-400"/>
             </div>
             <div>
-                <h3 class="h4 font-semibold text-surface-900 dark:text-surface-100 mb-2">
+                <h3 class="h4 font-semibold mb-2 leading-tight">
                     Your Basket is Empty
                 </h3>
-                <p class="text-surface-600 dark:text-surface-400">
-                    Select tickets from the events above to get started.
-                </p>
+                <p>Add some tickets to your basket to proceed.</p>
             </div>
         </div>
     </div>
