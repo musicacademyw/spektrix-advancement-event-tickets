@@ -71,7 +71,7 @@
     <div class="flex flex-col lg:flex-row lg:items-center justify-between gap-2 lg:gap-1">
         <div class="flex flex-col lg:flex-row lg:items-center gap-2">
             <span class="text-base font-semibold text-center lg:text-left">Attendee #{index + 1}</span>
-            <span class="badge preset-tonal-surface italic">{ticketInfo}
+            <span class="badge preset-filled-surface-50-950 border border-surface-100-900 italic">{ticketInfo}
                 - ${price?.toFixed(0) || '0'}</span>
         </div>
 
@@ -89,21 +89,26 @@
     </div>
 
     <!-- Form fields -->
-    <div class="grid grid-cols-1 gap-2">
-        <div class="input-group grid-cols-[auto_1fr_1fr]">
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-2">
+        <div class="input-group grid-cols-[auto_1fr]">
             <div class="ig-cell preset-tonal">
-                <User class="w-4 h-4"/>
+                <User class="w-5 h-5"/>
             </div>
             <input
-                    class="ig-input text-xs px-3 py-1"
+                    class="ig-input text-[1rem] px-3 py-2"
                     type="text"
                     autocomplete="given-name"
                     placeholder="First Name"
                     bind:value={firstName}
                     oninput={handleUpdate}
             />
+        </div>
+        <div class="input-group grid-cols-[auto_1fr]">
+            <div class="ig-cell preset-tonal">
+                <User class="w-5 h-5"/>
+            </div>
             <input
-                    class="ig-input text-xs px-3 py-2"
+                    class="ig-input text-[1rem] px-3 py-2"
                     type="text"
                     autocomplete="family-name"
                     placeholder="Last Name"
@@ -116,10 +121,10 @@
     <div class="grid grid-cols-3 gap-2">
         <div class="input-group grid-cols-[auto_1fr] col-span-3 lg:col-span-1">
             <div class="ig-cell preset-tonal">
-                <Utensils class="w-4 h-4"/>
+                <Utensils class="w-5 h-5"/>
             </div>
             <select
-                    class="ig-select text-xs px-3 py-2"
+                    class="ig-select text-[1rem] px-3 py-2"
                     bind:value={mealChoice}
                     onchange={handleUpdate}
             >
@@ -131,10 +136,10 @@
 
         <div class="input-group grid-cols-[auto_1fr] col-span-3 lg:col-span-2">
             <div class="ig-cell preset-tonal">
-                <FishOff class="w-4 h-4"/>
+                <FishOff class="w-5 h-5"/>
             </div>
             <input
-                    class="ig-input text-xs px-3 py-2"
+                    class="ig-input text-[1rem] px-3 py-2"
                     type="text"
                     placeholder="Dietary restrictions (optional)"
                     bind:value={dietaryRestrictions}
