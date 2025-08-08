@@ -6,10 +6,22 @@
     import {Toaster} from '@skeletonlabs/skeleton-svelte';
     import {toaster} from './toaster.js';
 
-    const SPEKTRIX_EVENT_IDS = [
-        '101001ASRCJQGCSBLJCPNPQQRRGSLJCLH',
-        '101201AKQDJBPLLQCKLJCTLCMQDHDTGBQ'
-    ];
+    // Parse event IDs from URL query parameters
+    function getEventIdsFromUrl() {
+        const urlParams = new URLSearchParams(window.location.search);
+        const eventIdsParam = urlParams.get('eventIds');
+
+        if (!eventIdsParam) {
+            // Return null to indicate no event IDs provided
+            return null;
+        }
+
+        // Split by comma and trim whitespace
+        return eventIdsParam.split(',').map(id => id.trim()).filter(id => id.length > 0);
+    }
+
+    const SPEKTRIX_EVENT_IDS = getEventIdsFromUrl();
+    const WEBSITE_BASE_URL = 'https://musicacademy.org';
 
     let events = $state([]);
     let availability = $state({});
@@ -22,56 +34,149 @@
     let basketLoading = $state(true); // Add separate loading state for basket
     let loading = $state(true);
     let error = $state(null);
-    let isTabVisible = $state(true);
 
-    // Auto-refresh availability every 30 seconds
+    // Enhanced user presence detection
+    let isUserPresent = $state(true);
+    let lastUserActivity = $state(Date.now());
     let availabilityInterval;
 
+    // Configuration for user presence detection
+    const ACTIVITY_TIMEOUT = 5 * 60 * 1000; // 5 minutes of inactivity = user not present
+    const REFRESH_INTERVAL = 30 * 1000; // 30 seconds between availability checks
+    const PRESENCE_CHECK_INTERVAL = 30 * 1000; // Check user presence every 30 seconds
+
     onMount(() => {
-        loadInitialData();
+        // Only load data if we have event IDs
+        if (SPEKTRIX_EVENT_IDS) {
+            loadInitialData();
+            setupUserPresenceDetection();
+        } else {
+            // No event IDs provided, set loading to false to show error state
+            loading = false;
+        }
+    });
 
-        // Set up tab visibility detection
+    /**
+     * Enhanced user presence detection that works in iFrames and detects laptop lid closures
+     * Combines multiple detection methods for better accuracy
+     */
+    function setupUserPresenceDetection() {
+        let presenceCheckInterval;
+
+        // Track user activity through multiple events
+        const updateUserActivity = () => {
+            lastUserActivity = Date.now();
+            if (!isUserPresent) {
+                isUserPresent = true;
+                console.log('User returned - resuming availability checks');
+                startRefreshInterval();
+            }
+        };
+
+        // Activity events to track (works in iFrames)
+        const activityEvents = [
+            'mousedown',
+            'mousemove',
+            'keypress',
+            'scroll',
+            'touchstart',
+            'click',
+            'focus',
+            'blur'
+        ];
+
+        // Add event listeners for user activity
+        activityEvents.forEach(event => {
+            document.addEventListener(event, updateUserActivity, {passive: true});
+        });
+
+        // Check for window/page visibility changes (primary detection)
         const handleVisibilityChange = () => {
-            isTabVisible = !document.hidden;
-
-            if (isTabVisible) {
-                // Tab became visible - refresh data and restart interval
-                refreshAvailability();
-                startAvailabilityInterval();
+            if (document.hidden) {
+                console.log('Page hidden - pausing availability checks');
+                isUserPresent = false;
+                stopRefreshInterval();
             } else {
-                // Tab became hidden - stop interval
-                stopAvailabilityInterval();
+                console.log('Page visible - resuming availability checks');
+                updateUserActivity();
+                refreshAvailability(); // Immediate refresh when page becomes visible
             }
         };
 
         document.addEventListener('visibilitychange', handleVisibilityChange);
 
-        // Start periodic availability refresh only if tab is visible
-        if (isTabVisible) {
-            startAvailabilityInterval();
+        // For iFrame environments, also listen to window focus/blur
+        const handleWindowFocus = () => {
+            console.log('Window focused - resuming availability checks');
+            updateUserActivity();
+            refreshAvailability();
+        };
+
+        const handleWindowBlur = () => {
+            console.log('Window blurred - checking user presence');
+            // Don't immediately stop - let the presence check handle it
+        };
+
+        window.addEventListener('focus', handleWindowFocus);
+        window.addEventListener('blur', handleWindowBlur);
+
+        // Periodic presence check (detects laptop lid closure, long inactivity)
+        const checkUserPresence = () => {
+            const timeSinceActivity = Date.now() - lastUserActivity;
+            const shouldBePresent = !document.hidden && timeSinceActivity < ACTIVITY_TIMEOUT;
+
+            if (shouldBePresent !== isUserPresent) {
+                isUserPresent = shouldBePresent;
+
+                if (isUserPresent) {
+                    console.log('User presence detected - starting availability checks');
+                    startRefreshInterval();
+                    refreshAvailability(); // Immediate refresh when user returns
+                } else {
+                    console.log('User absence detected - stopping availability checks');
+                    stopRefreshInterval();
+                }
+            }
+        };
+
+        // Start presence monitoring
+        presenceCheckInterval = setInterval(checkUserPresence, PRESENCE_CHECK_INTERVAL);
+
+        // Start availability refresh if user is initially present
+        if (isUserPresent && !document.hidden) {
+            startRefreshInterval();
         }
 
+        // Cleanup function for onMount
         return () => {
+            activityEvents.forEach(event => {
+                document.removeEventListener(event, updateUserActivity);
+            });
             document.removeEventListener('visibilitychange', handleVisibilityChange);
-            stopAvailabilityInterval();
+            window.removeEventListener('focus', handleWindowFocus);
+            window.removeEventListener('blur', handleWindowBlur);
+
+            if (presenceCheckInterval) {
+                clearInterval(presenceCheckInterval);
+            }
+            stopRefreshInterval();
         };
-    });
+    }
 
-    function startAvailabilityInterval() {
-        // Clear any existing interval first
-        stopAvailabilityInterval();
+    function startRefreshInterval() {
+        stopRefreshInterval();
 
-        // Only start if tab is visible
-        if (isTabVisible) {
+        if (isUserPresent && !document.hidden) {
             availabilityInterval = setInterval(() => {
-                if (isTabVisible) {
+                // Double-check user presence before each refresh
+                if (isUserPresent && !document.hidden) {
                     refreshAvailability();
                 }
-            }, 30000);
+            }, REFRESH_INTERVAL);
         }
     }
 
-    function stopAvailabilityInterval() {
+    function stopRefreshInterval() {
         if (availabilityInterval) {
             clearInterval(availabilityInterval);
             availabilityInterval = null;
@@ -445,13 +550,13 @@
     }
 
     function handleProceedToCheckout() {
-        // Navigate to the checkout page
-        window.location.href = '/checkout';
+        // Navigate to the checkout page on the main site
+        window.location.href = `${WEBSITE_BASE_URL}/checkout`;
     }
 
     function handleGetMariposaTickets() {
-        // Navigate to the Mariposa page
-        window.location.href = '/mariposa';
+        // Navigate to the Mariposa page on the main site
+        window.location.href = `${WEBSITE_BASE_URL}/mariposa`;
     }
 
     function handleAddEventToBasket() {
@@ -461,7 +566,24 @@
 
 <div class="container mx-auto p-4 space-y-6 max-w-7xl">
 
-    {#if loading && events.length === 0}
+    {#if !SPEKTRIX_EVENT_IDS}
+        <!-- Error state when no eventIds parameter provided -->
+        <div class="flex items-center justify-center py-24">
+            <div class="text-center space-y-4 max-w-md">
+                <div class="card py-6 px-6 preset-filled-error-100-900 border border-error-300-700">
+                    <h2 class="h3 mb-3">No Events Specified</h2>
+                    <p class="text-sm mb-4 leading-tight">
+                        Specify event IDs in the URL query parameters using the <code>eventIds</code> parameter.
+                    </p>
+                    <div class="text-xs text-left bg-surface-900-50 p-3 rounded border font-mono">
+                        <strong>Example:</strong><br>
+                        ?eventIds=EVENT_ID_1<br>
+                        ?eventIds=EVENT_ID_1,EVENT_ID_2
+                    </div>
+                </div>
+            </div>
+        </div>
+    {:else if loading && events.length === 0}
         <!-- Large centered loading spinner -->
         <div class="flex items-center justify-center py-24">
             <div class="text-center space-y-4">
