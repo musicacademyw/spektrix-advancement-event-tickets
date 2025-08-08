@@ -50,15 +50,15 @@
     ];
 
     // Check if form is complete using local state
-    const isComplete = $derived(firstName && lastName && mealChoice);
+    const isComplete = $derived(firstName.trim() && lastName.trim() && mealChoice);
 
     function handleUpdate() {
         onupdate({
             index,
             attendee: {
                 ...attendee,
-                firstName,
-                lastName,
+                firstName: firstName.trim(),
+                lastName: lastName.trim(),
                 mealChoice,
                 dietaryRestrictions
             }
