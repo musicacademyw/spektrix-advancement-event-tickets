@@ -548,6 +548,11 @@
         window.top.location.href = `${WEBSITE_BASE_URL}/mariposa`;
     }
 
+    function handleGetMoreAdvancementTickets() {
+        // Use direct navigation - works with sandbox="allow-top-navigation"
+        window.top.location.href = `${WEBSITE_BASE_URL}/upclose`;
+    }
+
     function handleAddEventToBasket() {
         addTicketsToBasket();
     }
@@ -704,6 +709,7 @@
                         onbasketupdated={handleBasketUpdated}
                         onproceedtocheckout={handleProceedToCheckout}
                         ongetmariposatickets={handleGetMariposaTickets}
+                        ongetmoreadvancementtickets={handleGetMoreAdvancementTickets}
                 />
             {/each}
         </div>

@@ -23,6 +23,8 @@
         },
         ongetmariposatickets = () => {
         },
+        ongetmoreadvancementtickets = () => {
+        },
         loading = false,
         numTicketsInBasket = 0,
     } = $props();
@@ -226,6 +228,7 @@
                 onbasketupdated={onbasketupdated}
                 onproceedtocheckout={onproceedtocheckout}
                 ongetmariposatickets={ongetmariposatickets}
+                ongetmoreadvancementtickets={ongetmoreadvancementtickets}
         />
     {/if}
 
@@ -404,7 +407,7 @@
                             <div class="animate-spin rounded-full h-5 w-5 border-2 border-surface border-t-transparent"></div>
                             <span>Adding...</span>
                         {:else}
-                            <ShoppingCart size={20}/>
+                            <ShoppingCart class="h-5 w-5"/>
                             <span>Add Ticket{totalTickets !== 1 ? 's' : ''} to Basket</span>
                         {/if}
                     </button>

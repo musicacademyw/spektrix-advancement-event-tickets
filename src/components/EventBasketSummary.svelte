@@ -7,7 +7,9 @@
         Utensils,
         FishOff,
         TicketCheck,
-        ShoppingCart
+        ShoppingCart,
+        Ticket,
+        Info
     } from 'lucide-svelte';
 
     const {
@@ -20,6 +22,8 @@
         onproceedtocheckout = () => {
         },
         ongetmariposatickets = () => {
+        },
+        ongetmoreadvancementtickets = () => {
         }
     } = $props();
 
@@ -165,22 +169,33 @@
         {/each}
 
         <!-- Footer with checkout button -->
-        <footer class="flex flex-col gap-2">
+        <footer class="flex flex-col gap-3">
             <button
                     class="btn w-full preset-filled-primary-700-300"
                     onclick={() => onproceedtocheckout()}
                     type="button"
             >
-                <ShoppingCart class="w-4 h-4"/>
+                <ShoppingCart class="w-5 h-5"/>
                 <span>Proceed to Checkout</span>
             </button>
-            <button
-                    class="btn w-full preset-filled-secondary-700-300"
-                    onclick={() => ongetmariposatickets()}
-                    type="button"
-            >
-                <span>Get Mariposa Tickets</span>
-            </button>
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-3">
+                <button
+                        class="btn w-full preset-outlined-secondary-700-300 text-secondary-700-300"
+                        onclick={() => ongetmariposatickets()}
+                        type="button"
+                >
+                    <Ticket class="w-5 h-5"/>
+                    <span>Get Mariposa Tickets</span>
+                </button>
+                <button
+                        class="btn w-full preset-outlined-tertiary-700-300 text-tertiary-700-300"
+                        onclick={() => ongetmoreadvancementtickets()}
+                        type="button"
+                >
+                    <Info class="w-5 h-5"/>
+                    <span>Browse Other Advancement Events</span>
+                </button>
+            </div>
         </footer>
     </div>
 {/if}
