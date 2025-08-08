@@ -71,15 +71,6 @@
         eventVenue: ''
     });
 
-    // Helper function to safely parse and format date
-    function getSafeDate(dateString) {
-        if (!dateString || dateString === 'Unknown Date') {
-            return new Date();
-        }
-        const date = new Date(dateString);
-        return isNaN(date.getTime()) ? new Date() : date;
-    }
-
     $effect(() => {
         if (eventTickets.length > 0) {
             const firstTicket = eventTickets[0];
@@ -108,8 +99,9 @@
     </div>
 {:else if eventTickets.length > 0}
     <div class="space-y-4">
-        <div class="gap-2">
-            <h4 class="h5 text-center text-lg not-lg:text-base">Review Your Tickets to {eventTitle}</h4>
+        <div class="flex flex-col gap-3">
+            <h4 class="h5 leading-tight text-center text-lg not-lg:text-base">Review Your
+                Ticket{totalTickets !== 1 ? 's' : ''} to {eventTitle}</h4>
             <div class="flex flex-wrap gap-1.5 justify-center">
                     <span class="badge preset-outlined-tertiary-100-900 text-tertiary-900-100 text-sm gap-1">
                         <TicketCheck class="w-4 h-4"/>
@@ -130,11 +122,11 @@
             </div>
         {/if}
 
-        {#each eventTickets as ticket}
+        {#each eventTickets as ticket, index}
             <div class="card p-3 preset-filled-surface-50-950 border border-surface-100-900 border-dashed">
                 <div class="flex items-end justify-between mb-3">
                     <h6 class="text-sm font-semibold flex-1 leading-tight">
-                        {ticket.attribute_RegistrantName || 'Unnamed Ticket'}
+                        Ticket #{index + 1}: {ticket.attribute_RegistrantName || 'Unnamed Ticket'}
                     </h6>
                     <button
                             class="btn-icon btn-icon-sm p-1 border-1 border-transparent text-error-700-300 hover:preset-outlined-error-700-300"
@@ -173,7 +165,7 @@
         {/each}
 
         <!-- Footer with checkout button -->
-        <footer class="preset-filled-surface-50-950 px-4 py-3 border-t border-surface-200-800 flex-shrink-0 space-y-2">
+        <footer class="flex flex-col gap-2">
             <button
                     class="btn w-full preset-filled-primary-700-300"
                     onclick={() => onproceedtocheckout()}

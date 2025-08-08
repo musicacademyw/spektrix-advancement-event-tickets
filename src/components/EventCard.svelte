@@ -161,15 +161,6 @@
             }
         }, 500); // Wait 500ms for basket update to complete
     }
-
-    // Event-specific checkout handler
-    function handleProceedToCheckoutForEvent() {
-        // Custom logic for proceeding to checkout with event-specific data
-        console.log('Proceeding to checkout for event:', event.id);
-
-        // Example: Redirect to a checkout page with the event ID
-        // window.location.href = `/checkout?event=${event.id}`;
-    }
 </script>
 
 <div class="card border-2 border-surface-200-800 p-5 space-y-3">
@@ -222,6 +213,22 @@
         </div>
     </header>
 
+    <!-- Basket Summary (only show if tickets added to basket) -->
+    {#if numTicketsInBasket > 0}
+        <!-- Step divider -->
+        <hr class="hr my-6"/>
+
+        <EventBasketSummary
+                {basketItems}
+                eventId={event.id}
+                eventTitle={event.attribute_ShortEventName}
+                basketLoading={basketLoading}
+                onbasketupdated={onbasketupdated}
+                onproceedtocheckout={onproceedtocheckout}
+                ongetmariposatickets={ongetmariposatickets}
+        />
+    {/if}
+
     <!-- Divider -->
     <hr class="hr my-6"/>
 
@@ -257,7 +264,7 @@
                 <div class="flex items-center justify-center w-8 h-8 bg-primary-500 text-white rounded-full text-sm font-bold">
                     1
                 </div>
-                <h4 class="h5 not-lg:text-base">Choose Tickets</h4>
+                <h4 class="h5 not-lg:text-base">{numTicketsInBasket > 0 ? 'Add More' : 'Add'} Tickets</h4>
             </div>
 
             <!-- Tickets already in basket warning -->
@@ -408,21 +415,5 @@
         <div class="card py-3 px-4 preset-filled-warning-100-900 border border-warning-300-700">
             <span>No ticket types available for this event</span>
         </div>
-    {/if}
-
-    <!-- Step 3: Basket Summary (only show if tickets added to basket) -->
-    {#if numTicketsInBasket > 0}
-        <!-- Step divider -->
-        <hr class="hr my-6"/>
-
-        <EventBasketSummary
-                {basketItems}
-                eventId={event.id}
-                eventTitle={event.attribute_ShortEventName}
-                basketLoading={basketLoading}
-                onbasketupdated={onbasketupdated}
-                onproceedtocheckout={handleProceedToCheckoutForEvent}
-                ongetmariposatickets={ongetmariposatickets}
-        />
     {/if}
 </div>

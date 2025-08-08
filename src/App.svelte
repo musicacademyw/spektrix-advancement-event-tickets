@@ -445,13 +445,13 @@
     }
 
     function handleProceedToCheckout() {
-        // In a real implementation, this would redirect to Spektrix checkout
-        alert('This would redirect to the Spektrix checkout process. Implementation depends on your specific Spektrix setup.');
+        // Navigate to the checkout page
+        window.location.href = '/checkout';
     }
 
     function handleGetMariposaTickets() {
-        // In a real implementation, this would redirect to Mariposa ticket retrieval
-        alert('This would redirect to the Mariposa ticket retrieval process. Implementation depends on your specific Mariposa setup.');
+        // Navigate to the Mariposa page
+        window.location.href = '/mariposa';
     }
 
     function handleAddEventToBasket() {
