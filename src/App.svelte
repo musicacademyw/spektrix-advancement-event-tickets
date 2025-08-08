@@ -686,7 +686,7 @@
         </div>
     {:else}
         <!-- Single column layout with individual event basket summaries -->
-        <div class="max-w-4xl mx-auto flex flex-col gap-6">
+        <div class="max-w-4xl mx-auto flex flex-col gap-6 py-4 lg:py-8">
             <!-- Event cards with integrated basket summaries -->
             {#each events as event}
                 <EventCard
