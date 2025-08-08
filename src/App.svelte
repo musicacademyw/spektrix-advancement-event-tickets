@@ -70,7 +70,6 @@
             lastUserActivity = Date.now();
             if (!isUserPresent) {
                 isUserPresent = true;
-                console.log('User returned - resuming availability checks');
                 startRefreshInterval();
             }
         };
@@ -95,11 +94,9 @@
         // Check for window/page visibility changes (primary detection)
         const handleVisibilityChange = () => {
             if (document.hidden) {
-                console.log('Page hidden - pausing availability checks');
                 isUserPresent = false;
                 stopRefreshInterval();
             } else {
-                console.log('Page visible - resuming availability checks');
                 updateUserActivity();
                 refreshAvailability(); // Immediate refresh when page becomes visible
             }
@@ -109,18 +106,11 @@
 
         // For iFrame environments, also listen to window focus/blur
         const handleWindowFocus = () => {
-            console.log('Window focused - resuming availability checks');
             updateUserActivity();
             refreshAvailability();
         };
 
-        const handleWindowBlur = () => {
-            console.log('Window blurred - checking user presence');
-            // Don't immediately stop - let the presence check handle it
-        };
-
         window.addEventListener('focus', handleWindowFocus);
-        window.addEventListener('blur', handleWindowBlur);
 
         // Periodic presence check (detects laptop lid closure, long inactivity)
         const checkUserPresence = () => {
@@ -131,11 +121,9 @@
                 isUserPresent = shouldBePresent;
 
                 if (isUserPresent) {
-                    console.log('User presence detected - starting availability checks');
                     startRefreshInterval();
                     refreshAvailability(); // Immediate refresh when user returns
                 } else {
-                    console.log('User absence detected - stopping availability checks');
                     stopRefreshInterval();
                 }
             }
@@ -156,7 +144,6 @@
             });
             document.removeEventListener('visibilitychange', handleVisibilityChange);
             window.removeEventListener('focus', handleWindowFocus);
-            window.removeEventListener('blur', handleWindowBlur);
 
             if (presenceCheckInterval) {
                 clearInterval(presenceCheckInterval);
@@ -621,8 +608,6 @@
                 currentHeight = 600; // Default fallback
             }
 
-            console.log('Calculated height:', currentHeight);
-
             // Only send if height has changed significantly (avoid spam)
             if (Math.abs(currentHeight - lastHeight) > 10) {
                 lastHeight = currentHeight;
@@ -664,7 +649,7 @@
     }
 </script>
 
-<div class="container mx-auto p-4 space-y-6 max-w-7xl">
+<div class="container mx-auto p-4 flex flex-col gap-6 max-w-7xl">
 
     {#if !SPEKTRIX_EVENT_IDS}
         <!-- Error state when no eventIds parameter provided -->
@@ -701,7 +686,7 @@
         </div>
     {:else}
         <!-- Single column layout with individual event basket summaries -->
-        <div class="max-w-4xl mx-auto space-y-6">
+        <div class="max-w-4xl mx-auto flex flex-col gap-6">
             <!-- Event cards with integrated basket summaries -->
             {#each events as event}
                 <EventCard
