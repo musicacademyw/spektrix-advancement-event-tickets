@@ -2,7 +2,6 @@
     import {onMount} from 'svelte';
     import {spektrixService} from './services/spektrix.js';
     import EventCard from './components/EventCard.svelte';
-    import BasketSummary from './components/BasketSummary.svelte';
     import {RefreshCw} from 'lucide-svelte';
     import {Toaster} from '@skeletonlabs/skeleton-svelte';
     import {toaster} from './toaster.js';
@@ -479,36 +478,27 @@
             </button>
         </div>
     {:else}
-        <!-- Grid layout: single column on mobile, 2/3 + 1/3 on lg+ -->
-        <div class="grid grid-cols-1 lg:grid-cols-3 lg:gap-6 lg:h-screen lg:overflow-hidden">
-            <!-- Left Column: Events (scrollable on lg+) -->
-            <div class="lg:col-span-2 space-y-6 lg:overflow-y-auto lg:pr-3">
-                <!-- Event cards with integrated attendee forms -->
-                {#each events as event}
-                    <EventCard
-                            {event}
-                            availability={availability[event.id]}
-                            {selectedTickets}
-                            {attendees}
-                            {loading}
-                            onticketselection={handleTicketSelection}
-                            onattendeeupdate={handleAttendeeUpdate}
-                            onaddtobasket={handleAddEventToBasket}
-                    />
-                {/each}
-            </div>
-
-            <!-- Right Column: Basket Summary (fixed height on lg+) -->
-            <div class="mt-6 lg:mt-0 lg:h-full lg:overflow-hidden">
-                <BasketSummary
+        <!-- Single column layout with individual event basket summaries -->
+        <div class="max-w-4xl mx-auto space-y-6">
+            <!-- Event cards with integrated basket summaries -->
+            {#each events as event}
+                <EventCard
+                        {event}
+                        availability={availability[event.id]}
+                        {selectedTickets}
+                        {attendees}
                         {basketItems}
-                        advancementEventIds={SPEKTRIX_EVENT_IDS}
-                        basketLoading={basketLoading}
+                        {basketLoading}
+                        {loading}
+                        numTicketsInBasket={basketItems.tickets?.filter(t => t.event?.id === event.id).length || 0}
+                        onticketselection={handleTicketSelection}
+                        onattendeeupdate={handleAttendeeUpdate}
+                        onaddtobasket={handleAddEventToBasket}
                         onbasketupdated={handleBasketUpdated}
                         onproceedtocheckout={handleProceedToCheckout}
                         ongetmariposatickets={handleGetMariposaTickets}
                 />
-            </div>
+            {/each}
         </div>
     {/if}
 

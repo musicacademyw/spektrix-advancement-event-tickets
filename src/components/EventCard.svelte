@@ -2,17 +2,26 @@
 <script>
     import {TriangleAlert, TicketX, TicketCheck, CalendarClock, MapPin, ShoppingCart} from 'lucide-svelte';
     import AttendeeForm from './AttendeeForm.svelte';
+    import EventBasketSummary from './EventBasketSummary.svelte';
 
     const {
         event,
         availability,
         selectedTickets = [],
         attendees = [],
+        basketItems = {},
+        basketLoading = false,
         onticketselection = () => {
         },
         onattendeeupdate = () => {
         },
         onaddtobasket = () => {
+        },
+        onbasketupdated = () => {
+        },
+        onproceedtocheckout = () => {
+        },
+        ongetmariposatickets = () => {
         },
         loading = false,
         numTicketsInBasket = 0,
@@ -151,6 +160,15 @@
                 });
             }
         }, 500); // Wait 500ms for basket update to complete
+    }
+
+    // Event-specific checkout handler
+    function handleProceedToCheckoutForEvent() {
+        // Custom logic for proceeding to checkout with event-specific data
+        console.log('Proceeding to checkout for event:', event.id);
+
+        // Example: Redirect to a checkout page with the event ID
+        // window.location.href = `/checkout?event=${event.id}`;
     }
 </script>
 
@@ -390,5 +408,21 @@
         <div class="card py-3 px-4 preset-filled-warning-100-900 border border-warning-300-700">
             <span>No ticket types available for this event</span>
         </div>
+    {/if}
+
+    <!-- Step 3: Basket Summary (only show if tickets added to basket) -->
+    {#if numTicketsInBasket > 0}
+        <!-- Step divider -->
+        <hr class="hr my-6"/>
+
+        <EventBasketSummary
+                {basketItems}
+                eventId={event.id}
+                eventTitle={event.attribute_ShortEventName}
+                basketLoading={basketLoading}
+                onbasketupdated={onbasketupdated}
+                onproceedtocheckout={handleProceedToCheckoutForEvent}
+                ongetmariposatickets={ongetmariposatickets}
+        />
     {/if}
 </div>
