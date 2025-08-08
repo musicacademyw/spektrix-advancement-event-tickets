@@ -552,33 +552,13 @@
     }
 
     function handleProceedToCheckout() {
-        // If we're in an iFrame, send message to parent to handle navigation
-        if (window.self !== window.top) {
-            window.parent.postMessage({
-                type: 'navigation-request',
-                action: 'checkout',
-                url: `${WEBSITE_BASE_URL}/checkout`,
-                source: 'advancement-tickets'
-            }, 'https://musicacademy.org');
-        } else {
-            // Fallback: direct navigation if not in iFrame
-            window.location.href = `${WEBSITE_BASE_URL}/checkout`;
-        }
+        // Use direct navigation - works with sandbox="allow-top-navigation"
+        window.top.location.href = `${WEBSITE_BASE_URL}/checkout`;
     }
 
     function handleGetMariposaTickets() {
-        // If we're in an iFrame, send message to parent to handle navigation
-        if (window.self !== window.top) {
-            window.parent.postMessage({
-                type: 'navigation-request',
-                action: 'mariposa',
-                url: `${WEBSITE_BASE_URL}/mariposa`,
-                source: 'advancement-tickets'
-            }, 'https://musicacademy.org');
-        } else {
-            // Fallback: direct navigation if not in iFrame
-            window.location.href = `${WEBSITE_BASE_URL}/mariposa`;
-        }
+        // Use direct navigation - works with sandbox="allow-top-navigation"
+        window.top.location.href = `${WEBSITE_BASE_URL}/mariposa`;
     }
 
     function handleAddEventToBasket() {
