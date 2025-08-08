@@ -168,7 +168,7 @@
     <header class="space-y-2">
         <div class="flex items-start justify-between">
             <div class="flex-1">
-                <h3 class="h4 font-semibold mb-1 text-center lg:text-left">{event.attribute_ShortEventName}</h3>
+                <h3 class="h4 font-semibold mb-1 text-center lg:text-left leading-tight">{event.attribute_ShortEventName}</h3>
                 <div class="flex flex-wrap not-lg:flex-col gap-2 mb-2">
                     {#if !availability}
                         <span class="badge placeholder w-35 h-8 animate-pulse"></span>
@@ -224,7 +224,7 @@
                 eventTitle={event.attribute_ShortEventName}
                 basketLoading={basketLoading}
                 onbasketupdated={onbasketupdated}
-                onproceedtocheckout={onproceedtocheckout}
+                onproceedtocheckout={handleProceedToCheckoutForEvent}
                 ongetmariposatickets={ongetmariposatickets}
         />
     {/if}
@@ -264,7 +264,7 @@
                 <div class="flex items-center justify-center w-8 h-8 bg-primary-500 text-white rounded-full text-sm font-bold">
                     1
                 </div>
-                <h4 class="h5 not-lg:text-base">{numTicketsInBasket > 0 ? 'Add More' : 'Add'} Tickets</h4>
+                <h4 class="h5 not-lg:text-base">{() => {numTicketsInBasket > 0 }} Tickets</h4>
             </div>
 
             <!-- Tickets already in basket warning -->
