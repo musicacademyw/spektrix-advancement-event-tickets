@@ -224,7 +224,7 @@
                 eventTitle={event.attribute_ShortEventName}
                 basketLoading={basketLoading}
                 onbasketupdated={onbasketupdated}
-                onproceedtocheckout={handleProceedToCheckoutForEvent}
+                onproceedtocheckout={onproceedtocheckout}
                 ongetmariposatickets={ongetmariposatickets}
         />
     {/if}
@@ -264,7 +264,9 @@
                 <div class="flex items-center justify-center w-8 h-8 bg-primary-500 text-white rounded-full text-sm font-bold">
                     1
                 </div>
-                <h4 class="h5 not-lg:text-base">{() => {numTicketsInBasket > 0 }} Tickets</h4>
+                <h4 class="h5 not-lg:text-base">{() => {
+                    return numTicketsInBasket > 0 ? 'Add More' : 'Get';
+                }} Tickets</h4>
             </div>
 
             <!-- Tickets already in basket warning -->
