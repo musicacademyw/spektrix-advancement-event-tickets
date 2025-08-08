@@ -50,9 +50,11 @@
         if (SPEKTRIX_EVENT_IDS) {
             loadInitialData();
             setupUserPresenceDetection();
+            setupIFrameHeightResizing();
         } else {
             // No event IDs provided, set loading to false to show error state
             loading = false;
+            setupIFrameHeightResizing(); // Still setup height resizing for error state
         }
     });
 
@@ -561,6 +563,61 @@
 
     function handleAddEventToBasket() {
         addTicketsToBasket();
+    }
+
+    /**
+     * Setup automatic iFrame height resizing for parent window
+     */
+    function setupIFrameHeightResizing() {
+        // Only run if we're in an iFrame
+        if (window.self === window.top) return;
+
+        let lastHeight = 0;
+
+        // Create unique identifier for this iFrame instance based on event IDs
+        const iframeId = SPEKTRIX_EVENT_IDS ? SPEKTRIX_EVENT_IDS.join('-') : 'default';
+
+        const sendHeightToParent = () => {
+            const currentHeight = document.documentElement.scrollHeight;
+
+            // Only send if height has changed significantly (avoid spam)
+            if (Math.abs(currentHeight - lastHeight) > 10) {
+                lastHeight = currentHeight;
+
+                // Send height to parent window with unique identifier
+                window.parent.postMessage({
+                    type: 'iframe-height-update',
+                    height: currentHeight,
+                    source: 'advancement-tickets',
+                    iframeId: iframeId,
+                    eventIds: SPEKTRIX_EVENT_IDS
+                }, 'https://musicacademy.org');
+            }
+        };
+
+        // Send initial height
+        setTimeout(sendHeightToParent, 100);
+
+        // Monitor for height changes using ResizeObserver (modern browsers)
+        if (window.ResizeObserver) {
+            const resizeObserver = new ResizeObserver(() => {
+                sendHeightToParent();
+            });
+
+            resizeObserver.observe(document.body);
+
+            // Cleanup function
+            return () => {
+                resizeObserver.disconnect();
+            };
+        } else {
+            // Fallback for older browsers - poll for height changes
+            const heightCheckInterval = setInterval(sendHeightToParent, 500);
+
+            return () => {
+                clearInterval(heightCheckInterval);
+            };
+        }
     }
 </script>
 

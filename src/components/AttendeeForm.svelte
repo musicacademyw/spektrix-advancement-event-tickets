@@ -46,10 +46,6 @@
         {
             value: 'Vegetarian',
             label: 'Vegetarian'
-        },
-        {
-            value: 'TBD',
-            label: 'TBD'
         }
     ];
 
