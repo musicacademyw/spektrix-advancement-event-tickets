@@ -180,7 +180,7 @@
             </button>
             <div class="grid grid-cols-1 lg:grid-cols-2 gap-3">
                 <button
-                        class="btn w-full preset-outlined-secondary-700-300 text-secondary-700-300"
+                        class="btn w-full preset-outlined-secondary-700-300 text-secondary-700-300 text-wrap not-lg:btn-sm"
                         onclick={() => ongetmariposatickets()}
                         type="button"
                 >
@@ -188,12 +188,12 @@
                     <span>Get Mariposa Tickets</span>
                 </button>
                 <button
-                        class="btn w-full preset-outlined-tertiary-700-300 text-tertiary-700-300"
+                        class="btn w-full preset-outlined-tertiary-700-300 text-tertiary-700-300 text-wrap not-lg:btn-sm"
                         onclick={() => ongetmoreadvancementtickets()}
                         type="button"
                 >
                     <Info class="w-5 h-5"/>
-                    <span>Browse Other Advancement Events</span>
+                    <span>Other Up Close & Unforgettable Events</span>
                 </button>
             </div>
         </footer>
