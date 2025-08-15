@@ -173,7 +173,7 @@
                 <h3 class="h4 font-semibold mb-1 text-center lg:text-left leading-tight">{event.attribute_ShortEventName}</h3>
                 <div class="flex flex-wrap not-lg:flex-col gap-2 mb-2">
                     {#if !availability}
-                        <span class="badge placeholder w-35 h-8 animate-pulse"></span>
+                        <span class="badge placeholder w-35 h-8 not-lg:w-full animate-pulse"></span>
                     {:else if !isOnSale && instance}
                         <span class="badge preset-outlined-warning-100-900 text-warning-950-50 font-bold"><TicketX
                                 class="h-4 w-4"/>Coming Soon</span>
@@ -203,8 +203,8 @@
                             {instance.attribute_WebVenue}
                         </span>
                     {:else}
-                        <span class="badge placeholder w-60 h-8 animate-pulse"></span>
-                        <span class="badge placeholder w-45 h-8 animate-pulse"></span>
+                        <span class="badge placeholder w-60 h-8 not-lg:w-full animate-pulse"></span>
+                        <span class="badge placeholder w-45 h-8 not-lg:w-full animate-pulse"></span>
                     {/if}
                 </div>
 
@@ -238,9 +238,8 @@
     {#if !availability}
         <!-- Skeleton loading state -->
         <div class="space-y-2 animate-pulse">
-            <div class="placeholder h-4 w-2/3"></div>
-            <div class="placeholder h-3 w-1/2"></div>
-            <div class="placeholder h-16 w-full"></div>
+            <div class="placeholder h-8 w-2/3"></div>
+            <div class="placeholder h-32 w-full"></div>
         </div>
     {:else if error}
         <div class="card py-3 px-4 preset-filled-error-100-900 border border-error-300-700">
