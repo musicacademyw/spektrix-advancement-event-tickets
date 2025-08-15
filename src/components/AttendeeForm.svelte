@@ -71,7 +71,7 @@
     <div class="flex flex-col lg:flex-row lg:items-center justify-between gap-2 lg:gap-1">
         <div class="flex flex-col lg:flex-row lg:items-center gap-2">
             <span class="text-base font-semibold text-center lg:text-left">Attendee #{index + 1}</span>
-            <span class="badge preset-filled-surface-50-950 border border-surface-100-900 italic text-wrap">{ticketInfo}
+            <span class="badge preset-filled-surface-50-950 border border-surface-100-900 italic text-wrap not-lg:text-center not-lg:leading-tight">{ticketInfo}
                 - ${price?.toFixed(0) || '0'}</span>
         </div>
 
