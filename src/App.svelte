@@ -613,14 +613,17 @@
                 currentHeight = 600; // Default fallback
             }
 
+            // Add 20px padding to prevent content cutoff
+            const heightWithPadding = currentHeight + 20;
+
             // Only send if height has changed significantly (avoid spam)
-            if (Math.abs(currentHeight - lastHeight) > 10) {
-                lastHeight = currentHeight;
+            if (Math.abs(heightWithPadding - lastHeight) > 10) {
+                lastHeight = heightWithPadding;
 
                 // Send height to parent window with unique identifier
                 window.parent.postMessage({
                     type: 'iframe-height-update',
-                    height: currentHeight,
+                    height: heightWithPadding,
                     source: 'advancement-tickets',
                     iframeId: iframeId,
                     eventIds: SPEKTRIX_EVENT_IDS
