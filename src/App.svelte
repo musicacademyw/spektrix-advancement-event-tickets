@@ -492,10 +492,15 @@
                     const attendee = attendees[i];
 
                     if (ticket && attendee) {
+                        // Trim names and dietary restrictions before adding to basket
+                        const trimmedFirstName = attendee.firstName.trim();
+                        const trimmedLastName = attendee.lastName.trim();
+                        const trimmedDietaryRestrictions = attendee.dietaryRestrictions?.trim() || '';
+
                         const attributes = {
-                            'attribute_Registrant Name': `${attendee.firstName} ${attendee.lastName}`,
+                            'attribute_Registrant Name': `${trimmedFirstName} ${trimmedLastName}`,
                             'attribute_Registrant Meal Choice': attendee.mealChoice,
-                            ...(attendee.dietaryRestrictions && {'attribute_Registrant Dietary Restrictions': attendee.dietaryRestrictions})
+                            ...(trimmedDietaryRestrictions && {'attribute_Registrant Dietary Restrictions': trimmedDietaryRestrictions})
                         };
 
                         try {

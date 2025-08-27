@@ -34,14 +34,13 @@
     // Check if form is complete using local state
     const isComplete = $derived(firstName.trim() && lastName.trim() && mealChoice);
 
-    // TODO: Fix trimming so that it is not trimming as the user is typing
     function handleUpdate() {
         onupdate({
             index,
             attendee: {
                 ...attendee,
-                firstName: firstName.trim(),
-                lastName: lastName.trim(),
+                firstName: firstName,
+                lastName: lastName,
                 mealChoice,
                 dietaryRestrictions
             }
