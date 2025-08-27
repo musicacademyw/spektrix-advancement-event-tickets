@@ -516,6 +516,9 @@
             attendees = [];
             await loadBasket();
 
+            // Refresh availability after adding to basket to ensure current data
+            await refreshAvailability();
+
         } catch (err) {
             error = err.message;
             console.error('Error adding tickets to basket:', err);
