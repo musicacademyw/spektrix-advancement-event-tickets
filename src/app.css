@@ -7,3 +7,35 @@
 @plugin "@tailwindcss/forms";
 
 @source '../node_modules/@skeletonlabs/skeleton-svelte/dist';
+
+.spektrix-html-description {
+    @apply text-[0.9rem] lg:text-sm text-center lg:text-left;
+}
+
+.spektrix-html-description h1 {
+    @apply h4 font-semibold mb-1 text-center lg:text-left leading-tight;
+}
+
+.spektrix-html-description h2 {
+    @apply h5 font-semibold mb-1 text-center lg:text-left leading-tight;
+}
+
+.spektrix-html-description ul {
+    @apply list-inside lg:list-disc space-y-0.5 lg:ml-3;
+}
+
+.spektrix-html-description ol {
+    @apply list-inside lg:list-decimal space-y-0.5 lg:ml-3;
+}
+
+.spektrix-html-description .BoldText {
+    @apply font-bold;
+}
+
+.spektrix-html-description .ItalicText {
+    @apply italic;
+}
+
+.spektrix-html-description .UnderlineText {
+    @apply underline;
+}

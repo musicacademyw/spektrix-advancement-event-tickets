@@ -208,8 +208,10 @@
                     {/if}
                 </div>
 
-                {#if event.description}
-                    <p class="text-[0.9rem] lg:text-sm text-center lg:text-left">{event.description}</p>
+                {#if event.htmlDescription}
+                    <div class="spektrix-html-description">
+                        {@html event.htmlDescription}
+                    </div>
                 {/if}
             </div>
         </div>
