@@ -12,6 +12,7 @@
         ticketInfo = '',
         price = 0,
         index = 0,
+        mealOptions = [],
         onupdate = () => {
         },
     } = $props();
@@ -29,25 +30,6 @@
         mealChoice = attendee.mealChoice;
         dietaryRestrictions = attendee.dietaryRestrictions;
     });
-
-    const mealOptions = [
-        {
-            value: '',
-            label: 'Select meal...'
-        },
-        {
-            value: 'Meat',
-            label: 'Meat'
-        },
-        {
-            value: 'Fish',
-            label: 'Fish'
-        },
-        {
-            value: 'Vegetarian',
-            label: 'Vegetarian'
-        }
-    ];
 
     // Check if form is complete using local state
     const isComplete = $derived(firstName.trim() && lastName.trim() && mealChoice);

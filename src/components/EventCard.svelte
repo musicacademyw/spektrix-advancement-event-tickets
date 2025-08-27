@@ -32,7 +32,7 @@
     let error = $state(null);
 
     // Extract data from availability structure using $derived
-    const instance = $derived(availability?.instance);
+    const instance = $derived(event?.instance);
     const status = $derived(availability?.status);
     const priceList = $derived(availability?.priceList);
     const plan = $derived(availability?.plan);
@@ -225,6 +225,7 @@
                 eventId={event.id}
                 eventTitle={event.attribute_ShortEventName}
                 basketLoading={basketLoading}
+                mealOptions={instance.mealOptions}
                 onbasketupdated={onbasketupdated}
                 onproceedtocheckout={onproceedtocheckout}
                 ongetmariposatickets={ongetmariposatickets}
@@ -375,6 +376,7 @@
                                     ticketInfo={attendee.ticketInfo}
                                     price={attendee.price || selectedTickets.find(t => t.eventId === event.id)?.price}
                                     index={index}
+                                    mealOptions={instance.mealOptions}
                                     onupdate={onattendeeupdate}
                             />
                         </div>

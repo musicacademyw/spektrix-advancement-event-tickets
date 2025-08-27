@@ -177,12 +177,12 @@
         error = null;
 
         try {
-            // Load event details and availability (no client init needed)
+            // Load events first, then availability (which depends on events)
+            await loadEvents();
             await Promise.all([
-                loadEvents(),
                 loadAvailability(),
                 loadBasket()
-            ]);
+            ]);// Load events first, then availability (which depends on events)
         } catch (err) {
             error = err.message;
             console.error('Error loading initial data:', err);
@@ -199,32 +199,33 @@
     }
 
     async function loadAvailability() {
-        const availabilityPromises = SPEKTRIX_EVENT_IDS.map(async (eventId) => {
+        const availabilityPromises = events.map(async (event) => {
             try {
-                // Get instances for this event (no date filtering since each event has a single instance)
-                const instances = await spektrixService.getEventInstances(eventId);
+                // Use the instance that's already attached to the event
+                const instance = event.instance;
 
-                if (instances.length > 0) {
+                if (instance) {
                     // Get comprehensive availability data including individual area status
-                    const instance = instances[0];
                     const availabilityInfo = await spektrixService.getInstanceAvailabilityData(instance.id);
 
                     return {
-                        eventId,
+                        eventId: event.id,
                         data: {
                             instance,
                             ...availabilityInfo
                         }
                     };
+                } else {
+                    console.error(`No instance found for event ${event.id}`);
                 }
                 return {
-                    eventId,
+                    eventId: event.id,
                     data: null
                 };
             } catch (err) {
-                console.error(`Error loading data for event ${eventId}:`, err);
+                console.error(`Error loading availability data for event ${event.id}:`, err);
                 return {
-                    eventId,
+                    eventId: event.id,
                     data: null
                 };
             }
@@ -248,6 +249,8 @@
     async function refreshAvailability() {
         try {
             const previousAvailability = {...availability};
+
+            await loadEvents();
 
             await Promise.all([
                 loadAvailability(),

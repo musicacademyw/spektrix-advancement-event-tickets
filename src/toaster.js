@@ -1,6 +1,5 @@
 import {createToaster} from '@skeletonlabs/skeleton-svelte';
 
-// TODO: Style the toasts and make sure line height is good
 export const toaster = createToaster({
     placement: 'top-end',
     max: 10,

@@ -17,6 +17,7 @@
         eventId = '',
         eventTitle = '',
         basketLoading = false,
+        mealOptions = [],
         onbasketupdated = () => {
         },
         onproceedtocheckout = () => {
@@ -52,8 +53,15 @@
         }, 0);
     });
 
+    // Format price as whole number
     function formatPrice(price) {
         return (Number(price) || 0).toFixed(0);
+    }
+
+    // Format the meal choice value for display
+    function formatMealChoice(value) {
+        const choice = mealOptions.find(opt => opt.value === value);
+        return choice ? choice.label : value;
     }
 
     async function removeTickets(ticketIds) {
@@ -155,7 +163,7 @@
                     {#if ticket.attribute_RegistrantMealChoice}
                                 <span class="badge preset-tonal-secondary border border-secondary-200-800 text-wrap text-xs gap-1 justify-start">
                                     <Utensils class="w-3 h-3"/>
-                                    <strong>Meal:</strong> {ticket.attribute_RegistrantMealChoice}
+                                    <strong>Meal:</strong> {formatMealChoice(ticket.attribute_RegistrantMealChoice)}
                                 </span>
                     {/if}
                     {#if ticket.attribute_RegistrantDietaryRestrictions}

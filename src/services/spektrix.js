@@ -16,29 +16,29 @@ class SpektrixService {
      */
     async getEventDetails(eventId) {
         try {
-            const response = await fetch(`${SPEKTRIX_BASE_URL}/events/${eventId}`);
+            const response = await fetch(`${SPEKTRIX_BASE_URL}/events/${eventId}?$expand=instances`);
             if (!response.ok) throw new Error(`Failed to get event details for ${eventId}`);
-            return await response.json();
-        } catch (error) {
-            console.error(`Error getting event details for ${eventId}:`, error);
-            throw error;
-        }
-    }
-
-    /**
-     * Get instances for an event
-     */
-    async getEventInstances(eventId, startDate = null) {
-        try {
-            let url = `${SPEKTRIX_BASE_URL}/events/${eventId}/instances`;
-            if (startDate) {
-                url += `?start_from=${startDate}`;
+            const event = await response.json();
+            if (!Array.isArray(event.instances) || event.instances.length !== 1) {
+                throw new Error(`Event ${eventId} must have exactly one instance`);
             }
-            const response = await fetch(url);
-            if (!response.ok) throw new Error(`Failed to get instances for event ${eventId}`);
-            return await response.json();
+            event.instance = event.instances[0];
+            delete event.instances;
+
+            // Parse meal options from the instance attribute if present
+            if (event.instance.attribute_WebMealOptions) {
+                try {
+                    event.instance.mealOptions = await this.parseMealOptions(event.instance.attribute_WebMealOptions);
+                    delete event.instance.attribute_WebMealOptions;
+                } catch (mealOptionsError) {
+                    throw new Error(`Failed to parse meal options for event ${eventId}: ${mealOptionsError.message}`);
+                }
+            } else {
+                throw new Error(`Event ${eventId} is missing required attribute_WebMealOptions`);
+            }
+
+            return event;
         } catch (error) {
-            console.error(`Error getting instances for event ${eventId}:`, error);
             throw error;
         }
     }
@@ -261,6 +261,59 @@ class SpektrixService {
             console.error(`Error getting comprehensive availability data for instance ${instanceId}:`, error);
             throw error;
         }
+    }
+
+    /**
+     * Parse instance meal options from an instance attribute string
+     */
+    async parseMealOptions(mealOptions) {
+        if (!mealOptions || typeof mealOptions !== 'string' || !mealOptions.trim()) {
+            throw new Error('Meal options string is empty.');
+        }
+
+        const allowedValues = new Set([
+            'Meat',
+            'Fish',
+            'Vegetarian',
+            'TBD']);
+        const seenValues = new Set();
+        const seenLabels = new Set();
+        const parsedOptions = [];
+
+        for (const pair of mealOptions.split(';')) {
+            const trimmed = pair.trim();
+            if (!trimmed) continue;
+
+            // Match: Value=Label or Value="Label with spaces"
+            const match = trimmed.match(/^("?[\w\s]+"?)=(?:"([^"]+)"|([^"]+))$/);
+            if (!match) continue;
+
+            let value = match[1].replace(/"/g, '').trim();
+            let label = (match[2] ?? match[3]).trim();
+
+            if (!allowedValues.has(value)) continue;
+            if (!label) continue;
+            if (seenValues.has(value) || seenLabels.has(label)) continue;
+
+            seenValues.add(value);
+            seenLabels.add(label);
+            parsedOptions.push({
+                value,
+                label
+            });
+        }
+
+        if (parsedOptions.length === 0) {
+            throw new Error('No valid meal options found.');
+        }
+
+        // Prepend default
+        return [
+            {
+                value: '',
+                label: 'Select meal...'
+            },
+            ...parsedOptions];
     }
 
 }
