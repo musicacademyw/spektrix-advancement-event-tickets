@@ -71,7 +71,7 @@
     </div>
 
     <!-- Form fields -->
-    <div class="grid grid-cols-1 lg:grid-cols-2 gap-2">
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-3">
         <div class="input-group grid-cols-[auto_1fr]">
             <div class="ig-cell preset-tonal">
                 <User class="w-5 h-5"/>
@@ -100,33 +100,31 @@
         </div>
     </div>
 
-    <div class="grid grid-cols-3 gap-2">
-        <div class="input-group grid-cols-[auto_1fr] col-span-3 lg:col-span-1">
-            <div class="ig-cell preset-tonal">
-                <Utensils class="w-5 h-5"/>
-            </div>
-            <select
-                    class="ig-select text-[1rem] px-3 py-2"
-                    bind:value={mealChoice}
-                    onchange={handleUpdate}
-            >
-                {#each mealOptions as option}
-                    <option value={option.value}>{option.label}</option>
-                {/each}
-            </select>
+    <div class="input-group grid-cols-[auto_1fr]">
+        <div class="ig-cell preset-tonal">
+            <Utensils class="w-5 h-5"/>
         </div>
+        <select
+                class="ig-select text-[1rem] px-3 py-2"
+                bind:value={mealChoice}
+                onchange={handleUpdate}
+        >
+            {#each mealOptions as option}
+                <option value={option.value}>{option.label}</option>
+            {/each}
+        </select>
+    </div>
 
-        <div class="input-group grid-cols-[auto_1fr] col-span-3 lg:col-span-2">
-            <div class="ig-cell preset-tonal">
-                <FishOff class="w-5 h-5"/>
-            </div>
-            <input
-                    class="ig-input text-[1rem] px-3 py-2"
-                    type="text"
-                    placeholder="Dietary restrictions (optional)"
-                    bind:value={dietaryRestrictions}
-                    oninput={handleUpdate}
-            />
+    <div class="input-group grid-cols-[auto_1fr]">
+        <div class="ig-cell preset-tonal">
+            <FishOff class="w-5 h-5"/>
         </div>
+        <input
+                class="ig-input text-[1rem] px-3 py-2"
+                type="text"
+                placeholder="Dietary restrictions (optional)"
+                bind:value={dietaryRestrictions}
+                oninput={handleUpdate}
+        />
     </div>
 </div>
