@@ -27,6 +27,7 @@
         },
         loading = false,
         numTicketsInBasket = 0,
+        websiteBaseUrl = ''
     } = $props();
 
     let error = $state(null);
@@ -40,17 +41,20 @@
 
     // Check if event is on sale and available using $derived
     const isOnSale = $derived(instance &&
-        new Date() >= new Date(instance.startSellingAtWeb) &&
-        new Date() <= new Date(instance.stopSellingAtWeb));
+        new Date() >= new Date(instance.startSellingAtWebUtc) &&
+        new Date() <= new Date(instance.stopSellingAtWebUtc) &&
+        instance.isOnSale === true);
     const hasAvailability = $derived(status && (status.available > 0 || (status.areas && status.areas.some(area => area.available > 0))));
+    const isComingSoon = $derived(instance && new Date() < new Date(instance.startSellingAtWebUtc));
+    const isSalesEnded = $derived(instance && new Date() > new Date(instance.stopSellingAtWebUtc));
 
     // Get sale status message with formatted dates
     const saleStatusMessage = $derived.by(() => {
         if (!instance) return '';
 
         const now = new Date();
-        const startSelling = new Date(instance.startSellingAtWeb);
-        const stopSelling = new Date(instance.stopSellingAtWeb);
+        const startSelling = new Date(instance.startSellingAtWebUtc);
+        const stopSelling = new Date(instance.stopSellingAtWebUtc);
 
         const formatDate = (date) => {
             return date.toLocaleDateString('en-US', {
@@ -66,9 +70,11 @@
         };
 
         if (now < startSelling) {
-            return `Tickets go on sale ${formatDate(startSelling)}`;
+            return `Tickets go on sale on ${formatDate(startSelling)}.`;
         } else if (now > stopSelling) {
-            return `Ticket sales ended ${formatDate(stopSelling)}`;
+            return `Ticket sales ended on ${formatDate(stopSelling)}.`;
+        } else if (instance.isOnSale === false) {
+            return 'Tickets are not currently on sale.';
         }
         return '';
     });
@@ -174,9 +180,15 @@
                 <div class="flex flex-wrap not-lg:flex-col gap-2 mb-2">
                     {#if !availability}
                         <span class="badge placeholder w-35 h-8 not-lg:w-full animate-pulse"></span>
-                    {:else if !isOnSale && instance}
+                    {:else if isComingSoon}
                         <span class="badge preset-outlined-warning-100-900 text-warning-950-50 font-bold"><TicketX
                                 class="h-4 w-4"/>Coming Soon</span>
+                    {:else if isSalesEnded}
+                        <span class="badge preset-outlined-error-100-900 text-error-950-50 font-bold"><TicketX
+                                class="h-4 w-4"/>Sales Ended</span>
+                    {:else if !isComingSoon && !isSalesEnded && !isOnSale}
+                        <span class="badge preset-outlined-error-100-900 text-error-950-50 font-bold"><TicketX
+                                class="h-4 w-4"/>Not On Sale</span>
                     {:else if isOnSale && hasAvailability}
                         <span class="badge preset-outlined-success-100-900 text-success-900-100 font-bold"><TicketCheck
                                 class="h-4 w-4"/>On Sale</span>
@@ -252,14 +264,15 @@
         <div class="card py-3 px-4 preset-filled-warning-100-900 border border-warning-300-700">
             <div class="flex items-center gap-2">
                 <TriangleAlert class="w-4 h-4"/>
-                <span class="text-sm font-medium">{saleStatusMessage}</span>
+                <span class="text-sm font-medium">{saleStatusMessage} Check out our <a
+                        href={websiteBaseUrl + '/calendar'} class="font-bold underline">Calendar page</a> for more events.</span>
             </div>
         </div>
     {:else if !hasAvailability}
         <div class="card py-3 px-4 preset-filled-error-100-900 border border-error-300-700">
             <div class="flex items-center gap-2">
                 <TicketX class="w-4 h-4"/>
-                <span class="text-sm font-medium">This event is sold out</span>
+                <span class="text-sm font-medium">This event is sold out.</span>
             </div>
         </div>
     {:else if plan?.areas}

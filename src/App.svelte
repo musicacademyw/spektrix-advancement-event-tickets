@@ -724,6 +724,7 @@
                         onproceedtocheckout={handleProceedToCheckout}
                         ongetmariposatickets={handleGetMariposaTickets}
                         ongetmoreadvancementtickets={handleGetMoreAdvancementTickets}
+                        websiteBaseUrl={WEBSITE_BASE_URL}
                 />
             {/each}
         </div>
