@@ -581,8 +581,48 @@
         const iframeId = SPEKTRIX_EVENT_IDS ? SPEKTRIX_EVENT_IDS.join('-') : 'default';
 
         const sendHeightToParent = () => {
-            // Get the full document height
-            const currentHeight = document.documentElement.scrollHeight;
+            // Try multiple methods to get the most accurate content height
+            const methods = [
+                // Method 1: Get the height of the main container
+                () => {
+                    const container = document.querySelector('.container');
+                    return container ? container.offsetHeight : 0;
+                },
+                // Method 2: Get the height of the actual content div
+                () => {
+                    const contentDiv = document.querySelector('div[class*="container"]');
+                    return contentDiv ? contentDiv.scrollHeight : 0;
+                },
+                // Method 3: Calculate from body's bounding rectangle
+                () => {
+                    const rect = document.body.getBoundingClientRect();
+                    return rect.height;
+                },
+                // Method 4: Use body offsetHeight
+                () => document.body.offsetHeight,
+                // Method 5: Fallback to scrollHeight (original method)
+                () => document.documentElement.scrollHeight
+            ];
+
+            let currentHeight = 0;
+
+            // Try each method until we get a reasonable height
+            for (const method of methods) {
+                try {
+                    const height = method();
+                    if (height > 0) { // Remove upper bound limit to support up to 10 attendees
+                        currentHeight = height;
+                        break;
+                    }
+                } catch (e) {
+                    console.warn('Height calculation method failed:', e);
+                }
+            }
+
+            // If no method worked, use a default
+            if (currentHeight === 0) {
+                currentHeight = 600; // Default fallback
+            }
 
             // Add 20px padding to prevent content cutoff
             const heightWithPadding = currentHeight + 20;
