@@ -37,7 +37,7 @@ jobs:
 
       - name: Install dependencies
         id: install-dependencies
-        run: npm ci
+        run: npm ci --prefer-offline
 
       - name: Build static site
         id: build-static
